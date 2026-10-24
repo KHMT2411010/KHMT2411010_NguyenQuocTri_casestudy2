@@ -5,9 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67b3e47c-90a6-4c0a-9219-4f4304496cf0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/TaskManager/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/lib/screens/auth/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/screens/auth/login_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/lib/screens/auth/register_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/screens/auth/register_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/app.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/main.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/models/notification.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/models/task.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/models/task_activity.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/models/task_share.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/models/user.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/screens/auth/login_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/screens/auth/register_screen.dart" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
