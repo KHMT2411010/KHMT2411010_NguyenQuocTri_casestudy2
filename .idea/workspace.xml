@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="67b3e47c-90a6-4c0a-9219-4f4304496cf0" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/controllers/authController.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/controllers/authController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/models/User.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/models/User.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/src/routes/authRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/routes/authRoutes.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
