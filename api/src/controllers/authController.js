@@ -66,6 +66,7 @@ exports.register = async (req, res) => {
     });
   } catch (error) {
     if (error.code === 11000) {
+    console.error("REGISTER ERROR:", error);
       return res.status(409).json({
         success: false,
         message: "Email đã tồn tại"

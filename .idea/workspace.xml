@@ -5,30 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67b3e47c-90a6-4c0a-9219-4f4304496cf0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/lib/app.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/app.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/lib/screens/profile/profile_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/screens/profile/profile_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/lib/services/api_client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/services/api_client.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/test/widget_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/test/widget_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/api/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/api/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/app.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/config/database.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/controllers/authController.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/controllers/taskController.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/middleware/authMiddleware.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/models/Task.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/models/User.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/routes/authRoutes.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/routes/taskRoutes.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/server.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/validators/authValidator.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/validators/taskValidator.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/src/controllers/authController.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/controllers/authController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/src/models/User.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/models/User.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
