@@ -1,17 +1,32 @@
 
-require('dotenv').config();
+require("dotenv").config();
 
-const app = require('./app');
-const connectDatabase = require('./config/database');
+const mongoose = require("mongoose");
+const app = require("./app");
 
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
-  await connectDatabase();
+  try {
+    if (!process.env.MONGODB_URI) {
+      throw new Error("Thiếu MONGODB_URI trong .env");
+    }
 
-  app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
-  });
+    if (!process.env.JWT_SECRET) {
+      throw new Error("Thiếu JWT_SECRET trong .env");
+    }
+
+    await mongoose.connect(process.env.MONGODB_URI);
+
+    console.log("Ket noi MongoDB thanh cong!");
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("Khoi dong that bai:", error.message);
+    process.exit(1);
+  }
 }
 
 startServer();
