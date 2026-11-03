@@ -1,11 +1,7 @@
-
 class AppValidators {
   const AppValidators._();
 
-  static String? requiredText(
-      String? value, {
-        String fieldName = 'Thông tin',
-      }) {
+  static String? requiredText(String? value, {String fieldName = 'Thông tin'}) {
     if (value == null || value.trim().isEmpty) {
       return 'Vui lòng nhập $fieldName';
     }
@@ -20,9 +16,7 @@ class AppValidators {
       return 'Vui lòng nhập email';
     }
 
-    final valid = RegExp(
-      r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-    ).hasMatch(text);
+    final valid = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(text);
 
     if (!valid) {
       return 'Địa chỉ email không hợp lệ';
@@ -45,10 +39,7 @@ class AppValidators {
     return null;
   }
 
-  static String? confirmPassword(
-      String? value,
-      String originalPassword,
-      ) {
+  static String? confirmPassword(String? value, String originalPassword) {
     if (value == null || value.isEmpty) {
       return 'Vui lòng xác nhận mật khẩu';
     }

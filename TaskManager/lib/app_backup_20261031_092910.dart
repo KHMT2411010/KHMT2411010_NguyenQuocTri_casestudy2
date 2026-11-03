@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+
 import 'services/api_client.dart';
 
 class TaskManagerApp extends StatelessWidget {
@@ -11,9 +11,7 @@ class TaskManagerApp extends StatelessWidget {
       title: 'Task Manager',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2563EB),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2563EB)),
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFFF8FAFC),
       ),
@@ -45,8 +43,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
 
       setState(() {
-        message = response['message']?.toString() ??
-            'Kết nối backend thành công!';
+        message =
+            response['message']?.toString() ?? 'Kết nối backend thành công!';
       });
     } catch (error) {
       if (!mounted) return;
@@ -105,25 +103,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24),
-                    Text(
-                      message,
-                      textAlign: TextAlign.center,
-                    ),
+                    Text(message, textAlign: TextAlign.center),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
-                        onPressed:
-                        isLoading ? null : checkConnection,
+                        onPressed: isLoading ? null : checkConnection,
                         icon: isLoading
                             ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
                             : const Icon(Icons.wifi_find),
                         label: const Text('Kiểm tra kết nối API'),
                       ),

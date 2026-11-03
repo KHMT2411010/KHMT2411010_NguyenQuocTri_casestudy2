@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../services/task_service.dart';
@@ -9,14 +8,10 @@ import '../../utils/validators.dart';
 class AssignmentScreen extends StatefulWidget {
   final String taskId;
 
-  const AssignmentScreen({
-    super.key,
-    required this.taskId,
-  });
+  const AssignmentScreen({super.key, required this.taskId});
 
   @override
-  State<AssignmentScreen> createState() =>
-      _AssignmentScreenState();
+  State<AssignmentScreen> createState() => _AssignmentScreenState();
 }
 
 class _AssignmentScreenState extends State<AssignmentScreen> {
@@ -40,17 +35,13 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
     super.dispose();
   }
 
-  void showMessage(
-      String message, {
-        bool error = false,
-      }) {
+  void showMessage(String message, {bool error = false}) {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor:
-        error ? AppColors.danger : AppColors.success,
+        backgroundColor: error ? AppColors.danger : AppColors.success,
       ),
     );
   }
@@ -115,22 +106,14 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
     final id = userId(user);
 
     if (id.isEmpty) {
-      showMessage(
-        'Không tìm thấy mã tài khoản hợp lệ',
-        error: true,
-      );
+      showMessage('Không tìm thấy mã tài khoản hợp lệ', error: true);
       return;
     }
 
-    final alreadySelected = selectedUsers.any(
-          (item) => userId(item) == id,
-    );
+    final alreadySelected = selectedUsers.any((item) => userId(item) == id);
 
     if (alreadySelected) {
-      showMessage(
-        'Thành viên này đã có trong danh sách',
-        error: true,
-      );
+      showMessage('Thành viên này đã có trong danh sách', error: true);
       return;
     }
 
@@ -151,14 +134,10 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
     if (saving) return;
 
     setState(() {
-      selectedUsers.removeWhere(
-            (user) => userId(user) == id,
-      );
+      selectedUsers.removeWhere((user) => userId(user) == id);
 
       if (primaryId == id) {
-        primaryId = selectedUsers.isEmpty
-            ? null
-            : userId(selectedUsers.first);
+        primaryId = selectedUsers.isEmpty ? null : userId(selectedUsers.first);
       }
     });
   }
@@ -167,20 +146,14 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
     if (saving) return;
 
     if (selectedUsers.isEmpty) {
-      showMessage(
-        'Vui lòng chọn ít nhất một người thực hiện',
-        error: true,
-      );
+      showMessage('Vui lòng chọn ít nhất một người thực hiện', error: true);
       return;
     }
 
     final ids = selectedUsers.map(userId).toList();
 
     if (primaryId == null || !ids.contains(primaryId)) {
-      showMessage(
-        'Vui lòng chọn người phụ trách chính',
-        error: true,
-      );
+      showMessage('Vui lòng chọn người phụ trách chính', error: true);
       return;
     }
 
@@ -214,10 +187,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       padding: const EdgeInsets.all(23),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            AppColors.primary,
-            AppColors.primaryLight,
-          ],
+          colors: [AppColors.primary, AppColors.primaryLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -226,11 +196,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.groups_2_outlined,
-            color: Colors.white,
-            size: 35,
-          ),
+          Icon(Icons.groups_2_outlined, color: Colors.white, size: 35),
           SizedBox(height: 13),
           Text(
             'Phân công thành viên',
@@ -243,12 +209,8 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
           SizedBox(height: 7),
           Text(
             'Tìm tài khoản bằng email, chọn nhiều người '
-                'thực hiện và chỉ định người phụ trách chính.',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              height: 1.5,
-            ),
+            'thực hiện và chỉ định người phụ trách chính.',
+            style: TextStyle(color: Colors.white, fontSize: 13, height: 1.5),
           ),
         ],
       ),
@@ -265,9 +227,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.border,
-        ),
+        border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
             color: Color(0x080E214A),
@@ -281,11 +241,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: AppColors.primary,
-                size: 22,
-              ),
+              Icon(icon, color: AppColors.primary, size: 22),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -315,9 +271,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFF0F4FF),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: const Color(0xFFDCE6FF),
-        ),
+        border: Border.all(color: const Color(0xFFDCE6FF)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -359,18 +313,13 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.verified_rounded,
-                color: AppColors.success,
-              ),
+              const Icon(Icons.verified_rounded, color: AppColors.success),
             ],
           ),
           const SizedBox(height: 13),
           FilledButton.tonalIcon(
             onPressed: saving ? null : addUser,
-            icon: const Icon(
-              Icons.person_add_alt_1_rounded,
-            ),
+            icon: const Icon(Icons.person_add_alt_1_rounded),
             label: const Text('Thêm vào danh sách'),
           ),
         ],
@@ -386,14 +335,10 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       margin: const EdgeInsets.only(bottom: 11),
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: isPrimary
-            ? const Color(0xFFF0F4FF)
-            : const Color(0xFFF9FAFD),
+        color: isPrimary ? const Color(0xFFF0F4FF) : const Color(0xFFF9FAFD),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: isPrimary
-              ? const Color(0xFF9CB5FF)
-              : AppColors.border,
+          color: isPrimary ? const Color(0xFF9CB5FF) : AppColors.border,
           width: isPrimary ? 1.5 : 1,
         ),
       ),
@@ -440,36 +385,22 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
               ),
               IconButton(
                 tooltip: 'Bỏ chọn thành viên',
-                onPressed: saving
-                    ? null
-                    : () => removeUser(id),
-                icon: const Icon(
-                  Icons.close_rounded,
-                  color: AppColors.danger,
-                ),
+                onPressed: saving ? null : () => removeUser(id),
+                icon: const Icon(Icons.close_rounded, color: AppColors.danger),
               ),
             ],
           ),
           const SizedBox(height: 7),
           InkWell(
             borderRadius: BorderRadius.circular(12),
-            onTap: saving
-                ? null
-                : () => setState(() => primaryId = id),
+            onTap: saving ? null : () => setState(() => primaryId = id),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 8,
-                horizontal: 5,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
               child: Row(
                 children: [
                   Icon(
-                    isPrimary
-                        ? Icons.star_rounded
-                        : Icons.star_border_rounded,
-                    color: isPrimary
-                        ? AppColors.warning
-                        : AppColors.muted,
+                    isPrimary ? Icons.star_rounded : Icons.star_border_rounded,
+                    color: isPrimary ? AppColors.warning : AppColors.muted,
                     size: 22,
                   ),
                   const SizedBox(width: 9),
@@ -479,9 +410,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                           ? 'Người phụ trách chính'
                           : 'Chọn làm người phụ trách chính',
                       style: TextStyle(
-                        color: isPrimary
-                            ? AppColors.primary
-                            : AppColors.navy,
+                        color: isPrimary ? AppColors.primary : AppColors.navy,
                         fontSize: 13,
                         fontWeight: isPrimary
                             ? FontWeight.w800
@@ -513,9 +442,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
         foregroundColor: AppColors.navy,
         title: const Text(
           'Giao công việc',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
       body: LayoutBuilder(
@@ -523,8 +450,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
           final compact = viewport.maxWidth < 600;
 
           return ListView(
-            keyboardDismissBehavior:
-            ScrollViewKeyboardDismissBehavior.onDrag,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.fromLTRB(
               compact ? 14 : 24,
               18,
@@ -534,12 +460,9 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: 750,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 750),
                   child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       buildHeader(),
                       const SizedBox(height: 17),
@@ -547,8 +470,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                         title: 'Tìm thành viên',
                         icon: Icons.person_search_outlined,
                         child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.stretch,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const Text(
                               'Nhập email của tài khoản đã đăng ký.',
@@ -560,10 +482,8 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                             const SizedBox(height: 15),
                             TextField(
                               controller: emailController,
-                              keyboardType:
-                              TextInputType.emailAddress,
-                              textInputAction:
-                              TextInputAction.search,
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.search,
                               onChanged: (_) {
                                 setState(() {
                                   foundUser = null;
@@ -574,35 +494,27 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                               decoration: const InputDecoration(
                                 labelText: 'Email thành viên',
                                 hintText: 'example@gmail.com',
-                                prefixIcon: Icon(
-                                  Icons.alternate_email_rounded,
-                                ),
+                                prefixIcon: Icon(Icons.alternate_email_rounded),
                               ),
                             ),
                             const SizedBox(height: 12),
                             SizedBox(
                               height: 48,
                               child: OutlinedButton.icon(
-                                onPressed:
-                                searching || saving
+                                onPressed: searching || saving
                                     ? null
                                     : searchUser,
                                 icon: searching
                                     ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child:
-                                  CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                    : const Icon(
-                                  Icons.search_rounded,
-                                ),
+                                        height: 18,
+                                        width: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.search_rounded),
                                 label: Text(
-                                  searching
-                                      ? 'Đang tìm...'
-                                      : 'Tìm tài khoản',
+                                  searching ? 'Đang tìm...' : 'Tìm tài khoản',
                                 ),
                               ),
                             ),
@@ -610,9 +522,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                               const SizedBox(height: 12),
                               Text(
                                 searchMessage!,
-                                style: const TextStyle(
-                                  color: AppColors.muted,
-                                ),
+                                style: const TextStyle(color: AppColors.muted),
                               ),
                             ],
                             if (foundUser != null) ...[
@@ -624,16 +534,14 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                       ),
                       const SizedBox(height: 16),
                       buildSection(
-                        title:
-                        'Danh sách thực hiện (${selectedUsers.length})',
+                        title: 'Danh sách thực hiện (${selectedUsers.length})',
                         icon: Icons.groups_outlined,
                         child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.stretch,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const Text(
                               'Một người sẽ được chỉ định '
-                                  'là phụ trách chính.',
+                              'là phụ trách chính.',
                               style: TextStyle(
                                 color: AppColors.muted,
                                 fontSize: 13,
@@ -645,8 +553,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                                 padding: const EdgeInsets.all(23),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFF8FAFD),
-                                  borderRadius:
-                                  BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: const Column(
                                   children: [
@@ -659,17 +566,13 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                                     Text(
                                       'Chưa có thành viên được chọn',
                                       textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: AppColors.muted,
-                                      ),
+                                      style: TextStyle(color: AppColors.muted),
                                     ),
                                   ],
                                 ),
                               )
                             else
-                              ...selectedUsers.map(
-                                buildSelectedUser,
-                              ),
+                              ...selectedUsers.map(buildSelectedUser),
                           ],
                         ),
                       ),
@@ -677,34 +580,26 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                       SizedBox(
                         height: 54,
                         child: FilledButton.icon(
-                          onPressed:
-                          saving ? null : saveAssignment,
+                          onPressed: saving ? null : saveAssignment,
                           style: FilledButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             shape: RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                           ),
                           icon: saving
                               ? const SizedBox(
-                            height: 19,
-                            width: 19,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                              : const Icon(
-                            Icons.send_rounded,
-                          ),
+                                  height: 19,
+                                  width: 19,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.send_rounded),
                           label: Text(
-                            saving
-                                ? 'Đang giao việc...'
-                                : 'Xác nhận giao việc',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                            ),
+                            saving ? 'Đang giao việc...' : 'Xác nhận giao việc',
+                            style: const TextStyle(fontWeight: FontWeight.w800),
                           ),
                         ),
                       ),

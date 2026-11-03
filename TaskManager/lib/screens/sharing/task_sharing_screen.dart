@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../services/task_share_service.dart';
@@ -9,10 +8,7 @@ import '../../utils/validators.dart';
 class SharingScreen extends StatefulWidget {
   final String taskId;
 
-  const SharingScreen({
-    super.key,
-    required this.taskId,
-  });
+  const SharingScreen({super.key, required this.taskId});
 
   @override
   State<SharingScreen> createState() => _SharingScreenState();
@@ -53,8 +49,7 @@ class _SharingScreenState extends State<SharingScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor:
-        error ? AppColors.danger : AppColors.success,
+        backgroundColor: error ? AppColors.danger : AppColors.success,
       ),
     );
   }
@@ -65,10 +60,7 @@ class _SharingScreenState extends State<SharingScreen> {
 
   String userName(dynamic user) {
     if (user is Map) {
-      return (user['fullName'] ??
-          user['email'] ??
-          'Người dùng')
-          .toString();
+      return (user['fullName'] ?? user['email'] ?? 'Người dùng').toString();
     }
 
     return 'Người dùng';
@@ -88,9 +80,7 @@ class _SharingScreenState extends State<SharingScreen> {
     setState(() => loading = true);
 
     try {
-      final result = await _shareService.getShares(
-        widget.taskId,
-      );
+      final result = await _shareService.getShares(widget.taskId);
 
       if (!mounted) return;
 
@@ -152,10 +142,7 @@ class _SharingScreenState extends State<SharingScreen> {
     final id = userId(foundUser!);
 
     if (id.isEmpty) {
-      showMessage(
-        'Tài khoản không có mã người dùng hợp lệ',
-        error: true,
-      );
+      showMessage('Tài khoản không có mã người dùng hợp lệ', error: true);
       return;
     }
 
@@ -172,7 +159,7 @@ class _SharingScreenState extends State<SharingScreen> {
     if (alreadyShared) {
       showMessage(
         'Người này đã được chia sẻ. '
-            'Bạn có thể thay đổi quyền ở danh sách bên dưới.',
+        'Bạn có thể thay đổi quyền ở danh sách bên dưới.',
         error: true,
       );
       return;
@@ -209,10 +196,7 @@ class _SharingScreenState extends State<SharingScreen> {
     }
   }
 
-  Future<void> changePermission(
-      String shareId,
-      String value,
-      ) async {
+  Future<void> changePermission(String shareId, String value) async {
     if (processing) return;
 
     setState(() => processing = true);
@@ -244,24 +228,20 @@ class _SharingScreenState extends State<SharingScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Text('Thu hồi quyền chia sẻ?'),
         content: const Text(
           'Người này sẽ mất quyền truy cập thông qua '
-              'chia sẻ. Nếu họ đồng thời được giao việc, '
-              'quyền từ vai trò được giao có thể vẫn còn.',
+          'chia sẻ. Nếu họ đồng thời được giao việc, '
+          'quyền từ vai trò được giao có thể vẫn còn.',
         ),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Hủy'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Thu hồi'),
           ),
         ],
@@ -273,10 +253,7 @@ class _SharingScreenState extends State<SharingScreen> {
     setState(() => processing = true);
 
     try {
-      await _shareService.removeShare(
-        taskId: widget.taskId,
-        shareId: shareId,
-      );
+      await _shareService.removeShare(taskId: widget.taskId, shareId: shareId);
 
       if (!mounted) return;
 
@@ -347,20 +324,14 @@ class _SharingScreenState extends State<SharingScreen> {
 
     return InkWell(
       borderRadius: BorderRadius.circular(15),
-      onTap: saving
-          ? null
-          : () => setState(() => permission = value),
+      onTap: saving ? null : () => setState(() => permission = value),
       child: Container(
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFFF0F4FF)
-              : const Color(0xFFF9FAFD),
+          color: selected ? const Color(0xFFF0F4FF) : const Color(0xFFF9FAFD),
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: selected
-                ? AppColors.primary
-                : AppColors.border,
+            color: selected ? AppColors.primary : AppColors.border,
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -396,9 +367,7 @@ class _SharingScreenState extends State<SharingScreen> {
               selected
                   ? Icons.radio_button_checked_rounded
                   : Icons.radio_button_off_rounded,
-              color: selected
-                  ? AppColors.primary
-                  : AppColors.muted,
+              color: selected ? AppColors.primary : AppColors.muted,
             ),
           ],
         ),
@@ -417,9 +386,7 @@ class _SharingScreenState extends State<SharingScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFF0F4FF),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: const Color(0xFFDCE6FF),
-        ),
+        border: Border.all(color: const Color(0xFFDCE6FF)),
       ),
       child: Row(
         children: [
@@ -449,18 +416,12 @@ class _SharingScreenState extends State<SharingScreen> {
                 Text(
                   userEmail(user),
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.muted,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
                 ),
               ],
             ),
           ),
-          const Icon(
-            Icons.verified_rounded,
-            color: AppColors.success,
-          ),
+          const Icon(Icons.verified_rounded, color: AppColors.success),
         ],
       ),
     );
@@ -471,8 +432,7 @@ class _SharingScreenState extends State<SharingScreen> {
     final user = share['userId'];
     final name = userName(user);
     final email = userEmail(user);
-    final currentPermission =
-    share['permission']?.toString() == 'editor'
+    final currentPermission = share['permission']?.toString() == 'editor'
         ? 'editor'
         : 'viewer';
 
@@ -512,9 +472,7 @@ class _SharingScreenState extends State<SharingScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      email.isEmpty
-                          ? 'Thông tin email chưa có'
-                          : email,
+                      email.isEmpty ? 'Thông tin email chưa có' : email,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -561,11 +519,10 @@ class _SharingScreenState extends State<SharingScreen> {
                   onChanged: processing || id.isEmpty
                       ? null
                       : (value) {
-                    if (value != null &&
-                        value != currentPermission) {
-                      changePermission(id, value);
-                    }
-                  },
+                          if (value != null && value != currentPermission) {
+                            changePermission(id, value);
+                          }
+                        },
                 ),
               ),
               const SizedBox(width: 7),
@@ -610,8 +567,7 @@ class _SharingScreenState extends State<SharingScreen> {
           final compact = viewport.maxWidth < 600;
 
           return ListView(
-            keyboardDismissBehavior:
-            ScrollViewKeyboardDismissBehavior.onDrag,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.fromLTRB(
               compact ? 14 : 24,
               18,
@@ -621,28 +577,20 @@ class _SharingScreenState extends State<SharingScreen> {
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: 750,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 750),
                   child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Container(
                         padding: const EdgeInsets.all(23),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [
-                              AppColors.primary,
-                              AppColors.primaryLight,
-                            ],
+                            colors: [AppColors.primary, AppColors.primaryLight],
                           ),
-                          borderRadius:
-                          BorderRadius.circular(22),
+                          borderRadius: BorderRadius.circular(22),
                         ),
                         child: const Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
                               Icons.shield_outlined,
@@ -661,8 +609,8 @@ class _SharingScreenState extends State<SharingScreen> {
                             SizedBox(height: 8),
                             Text(
                               'Cho phép người khác xem hoặc '
-                                  'chỉnh sửa công việc theo quyền '
-                                  'bạn lựa chọn.',
+                              'chỉnh sửa công việc theo quyền '
+                              'bạn lựa chọn.',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 13,
@@ -677,8 +625,7 @@ class _SharingScreenState extends State<SharingScreen> {
                         title: 'Thêm người được chia sẻ',
                         icon: Icons.person_add_alt_1_outlined,
                         child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.stretch,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const Text(
                               'Nhập email đã đăng ký trên TaskManager.',
@@ -690,10 +637,8 @@ class _SharingScreenState extends State<SharingScreen> {
                             const SizedBox(height: 15),
                             TextField(
                               controller: emailController,
-                              keyboardType:
-                              TextInputType.emailAddress,
-                              textInputAction:
-                              TextInputAction.search,
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.search,
                               onChanged: (_) {
                                 setState(() {
                                   foundUser = null;
@@ -704,35 +649,27 @@ class _SharingScreenState extends State<SharingScreen> {
                               decoration: const InputDecoration(
                                 labelText: 'Email người nhận',
                                 hintText: 'example@gmail.com',
-                                prefixIcon: Icon(
-                                  Icons.alternate_email_rounded,
-                                ),
+                                prefixIcon: Icon(Icons.alternate_email_rounded),
                               ),
                             ),
                             const SizedBox(height: 12),
                             SizedBox(
                               height: 48,
                               child: OutlinedButton.icon(
-                                onPressed:
-                                searching || saving
+                                onPressed: searching || saving
                                     ? null
                                     : searchUser,
                                 icon: searching
                                     ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child:
-                                  CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                    : const Icon(
-                                  Icons.search_rounded,
-                                ),
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.search_rounded),
                                 label: Text(
-                                  searching
-                                      ? 'Đang tìm...'
-                                      : 'Tìm tài khoản',
+                                  searching ? 'Đang tìm...' : 'Tìm tài khoản',
                                 ),
                               ),
                             ),
@@ -740,9 +677,7 @@ class _SharingScreenState extends State<SharingScreen> {
                               const SizedBox(height: 12),
                               Text(
                                 searchMessage!,
-                                style: const TextStyle(
-                                  color: AppColors.muted,
-                                ),
+                                style: const TextStyle(color: AppColors.muted),
                               ),
                             ],
                             if (foundUser != null) ...[
@@ -762,7 +697,7 @@ class _SharingScreenState extends State<SharingScreen> {
                               value: 'viewer',
                               title: 'Viewer – Chỉ xem',
                               description:
-                              'Được theo dõi nội dung và '
+                                  'Được theo dõi nội dung và '
                                   'tiến độ, không được sửa.',
                               icon: Icons.visibility_outlined,
                             ),
@@ -771,7 +706,7 @@ class _SharingScreenState extends State<SharingScreen> {
                               value: 'editor',
                               title: 'Editor – Chỉnh sửa',
                               description:
-                              'Được chỉnh sửa trong phạm vi '
+                                  'Được chỉnh sửa trong phạm vi '
                                   'backend cho phép; không tự '
                                   'động có quyền xóa hoặc chia sẻ.',
                               icon: Icons.edit_outlined,
@@ -780,28 +715,23 @@ class _SharingScreenState extends State<SharingScreen> {
                             SizedBox(
                               height: 52,
                               child: FilledButton.icon(
-                                onPressed: saving ||
-                                    processing ||
-                                    foundUser == null
+                                onPressed:
+                                    saving || processing || foundUser == null
                                     ? null
                                     : addShare,
                                 style: FilledButton.styleFrom(
-                                  backgroundColor:
-                                  AppColors.primary,
+                                  backgroundColor: AppColors.primary,
                                 ),
                                 icon: saving
                                     ? const SizedBox(
-                                  width: 19,
-                                  height: 19,
-                                  child:
-                                  CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                    : const Icon(
-                                  Icons.person_add_rounded,
-                                ),
+                                        width: 19,
+                                        height: 19,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.person_add_rounded),
                                 label: Text(
                                   saving
                                       ? 'Đang chia sẻ...'
@@ -817,12 +747,10 @@ class _SharingScreenState extends State<SharingScreen> {
                       ),
                       const SizedBox(height: 16),
                       section(
-                        title:
-                        'Danh sách đã chia sẻ (${shares.length})',
+                        title: 'Danh sách đã chia sẻ (${shares.length})',
                         icon: Icons.groups_outlined,
                         child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.stretch,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             if (loading)
                               const Padding(
@@ -833,9 +761,7 @@ class _SharingScreenState extends State<SharingScreen> {
                               )
                             else if (shares.isEmpty)
                               const Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 25,
-                                ),
+                                padding: EdgeInsets.symmetric(vertical: 25),
                                 child: Column(
                                   children: [
                                     Icon(
@@ -846,9 +772,7 @@ class _SharingScreenState extends State<SharingScreen> {
                                     SizedBox(height: 11),
                                     Text(
                                       'Chưa chia sẻ với ai',
-                                      style: TextStyle(
-                                        color: AppColors.muted,
-                                      ),
+                                      style: TextStyle(color: AppColors.muted),
                                     ),
                                   ],
                                 ),

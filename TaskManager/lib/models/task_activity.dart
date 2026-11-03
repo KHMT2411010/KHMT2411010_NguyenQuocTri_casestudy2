@@ -1,4 +1,3 @@
-
 class TaskActivity {
   final String id;
   final String taskId;
@@ -24,20 +23,14 @@ class TaskActivity {
     return value?.toString() ?? '';
   }
 
-  factory TaskActivity.fromJson(
-      Map<String, dynamic> json,
-      ) {
+  factory TaskActivity.fromJson(Map<String, dynamic> json) {
     return TaskActivity(
       id: (json['_id'] ?? json['id'] ?? '').toString(),
       taskId: _readId(json['taskId']),
-      userId: json['userId'] == null
-          ? null
-          : _readId(json['userId']),
+      userId: json['userId'] == null ? null : _readId(json['userId']),
       action: (json['action'] ?? '').toString(),
       description: json['description']?.toString(),
-      createdAt: DateTime.tryParse(
-        json['createdAt']?.toString() ?? '',
-      ),
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
     );
   }
 

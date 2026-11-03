@@ -1,4 +1,3 @@
-
 class AppDateFormatter {
   const AppDateFormatter._();
 
@@ -10,10 +9,7 @@ class AppDateFormatter {
     return DateTime.tryParse(value.toString());
   }
 
-  static String format(
-      dynamic value, {
-        String fallback = 'Chưa thiết lập',
-      }) {
+  static String format(dynamic value, {String fallback = 'Chưa thiết lập'}) {
     final date = parse(value);
 
     if (date == null) return fallback;
@@ -26,9 +22,9 @@ class AppDateFormatter {
   }
 
   static String formatDateTime(
-      dynamic value, {
-        String fallback = 'Chưa có thông tin',
-      }) {
+    dynamic value, {
+    String fallback = 'Chưa có thông tin',
+  }) {
     final date = parse(value);
 
     if (date == null) return fallback;
@@ -49,40 +45,21 @@ class AppDateFormatter {
     final local = date.toLocal();
     final now = DateTime.now();
 
-    final deadline = DateTime(
-      local.year,
-      local.month,
-      local.day,
-    );
+    final deadline = DateTime(local.year, local.month, local.day);
 
-    final today = DateTime(
-      now.year,
-      now.month,
-      now.day,
-    );
+    final today = DateTime(now.year, now.month, now.day);
 
     return deadline.isBefore(today);
   }
 
-  static bool isValidRange(
-      DateTime? startDate,
-      DateTime? dueDate,
-      ) {
+  static bool isValidRange(DateTime? startDate, DateTime? dueDate) {
     if (startDate == null || dueDate == null) {
       return true;
     }
 
-    final start = DateTime(
-      startDate.year,
-      startDate.month,
-      startDate.day,
-    );
+    final start = DateTime(startDate.year, startDate.month, startDate.day);
 
-    final due = DateTime(
-      dueDate.year,
-      dueDate.month,
-      dueDate.day,
-    );
+    final due = DateTime(dueDate.year, dueDate.month, dueDate.day);
 
     return !due.isBefore(start);
   }

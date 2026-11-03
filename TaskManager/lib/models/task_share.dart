@@ -1,4 +1,3 @@
-
 import 'user.dart';
 
 enum SharePermission {
@@ -61,32 +60,22 @@ class TaskShare {
       userId: _getId(rawUser),
 
       user: rawUser is Map
-          ? AppUser.fromJson(
-        Map<String, dynamic>.from(rawUser),
-      )
+          ? AppUser.fromJson(Map<String, dynamic>.from(rawUser))
           : null,
 
-      permission: SharePermission.fromValue(
-        json['permission'],
-      ),
+      permission: SharePermission.fromValue(json['permission']),
 
-      sharedById: json['sharedBy'] == null
-          ? null
-          : _getId(json['sharedBy']),
+      sharedById: json['sharedBy'] == null ? null : _getId(json['sharedBy']),
 
-      createdAt: DateTime.tryParse(
-        json['createdAt']?.toString() ?? '',
-      ),
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
     );
   }
 
   bool get canView => true;
 
-  bool get canEdit =>
-      permission == SharePermission.editor;
+  bool get canEdit => permission == SharePermission.editor;
 
-  String get displayName =>
-      user?.displayName ?? 'Người dùng';
+  String get displayName => user?.displayName ?? 'Người dùng';
 
   String get email => user?.email ?? '';
 
@@ -97,8 +86,7 @@ class TaskShare {
       'userId': userId,
       'permission': permission.value,
       'sharedBy': sharedById,
-      if (createdAt != null)
-        'createdAt': createdAt!.toIso8601String(),
+      if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
     };
   }
 }

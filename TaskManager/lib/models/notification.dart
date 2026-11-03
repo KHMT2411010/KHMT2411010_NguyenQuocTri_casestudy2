@@ -1,4 +1,3 @@
-
 class AppNotification {
   final String id;
   final String title;
@@ -28,9 +27,7 @@ class AppNotification {
     return value.toString();
   }
 
-  factory AppNotification.fromJson(
-      Map<String, dynamic> json,
-      ) {
+  factory AppNotification.fromJson(Map<String, dynamic> json) {
     return AppNotification(
       id: (json['_id'] ?? json['id'] ?? '').toString(),
       title: (json['title'] ?? '').toString(),
@@ -38,9 +35,7 @@ class AppNotification {
       type: json['type']?.toString(),
       taskId: _idOf(json['taskId']),
       isRead: json['isRead'] == true,
-      createdAt: DateTime.tryParse(
-        json['createdAt']?.toString() ?? '',
-      ),
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
     );
   }
 

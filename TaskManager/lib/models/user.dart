@@ -1,4 +1,3 @@
-
 class AppUser {
   final String id;
   final String fullName;
@@ -56,10 +55,8 @@ class AppUser {
       '_id': id,
       'fullName': fullName,
       'email': email,
-      if (createdAt != null)
-        'createdAt': createdAt!.toIso8601String(),
-      if (updatedAt != null)
-        'updatedAt': updatedAt!.toIso8601String(),
+      if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
     };
   }
 

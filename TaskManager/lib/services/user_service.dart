@@ -1,12 +1,9 @@
-
 import 'api_client.dart';
 
 class UserService {
   const UserService();
 
-  Future<List<Map<String, dynamic>>> searchUsers(
-      String keyword,
-      ) async {
+  Future<List<Map<String, dynamic>>> searchUsers(String keyword) async {
     final q = keyword.trim();
 
     if (q.isEmpty) return [];
@@ -25,27 +22,21 @@ class UserService {
       users = raw['users'] as List;
     }
 
-    return users
-        .map((item) => Map<String, dynamic>.from(item as Map))
-        .toList();
+    return users.map((item) => Map<String, dynamic>.from(item as Map)).toList();
   }
 
   // Tìm chính xác tài khoản theo email.
-  Future<Map<String, dynamic>?> findByEmail(
-      String email,
-      ) async {
+  Future<Map<String, dynamic>?> findByEmail(String email) async {
     final normalized = email.trim().toLowerCase();
 
-    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-        .hasMatch(normalized)) {
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(normalized)) {
       throw ArgumentError('Email không hợp lệ');
     }
 
     final users = await searchUsers(normalized);
 
     for (final user in users) {
-      final candidate =
-      user['email']?.toString().trim().toLowerCase();
+      final candidate = user['email']?.toString().trim().toLowerCase();
 
       if (candidate == normalized) {
         return user;
@@ -55,9 +46,7 @@ class UserService {
     return null;
   }
 
-  Future<Map<String, dynamic>> getUserById(
-      String userId,
-      ) async {
+  Future<Map<String, dynamic>> getUserById(String userId) async {
     final response = await ApiClient.get('/api/users/$userId');
 
     return Map<String, dynamic>.from(response['data'] as Map);

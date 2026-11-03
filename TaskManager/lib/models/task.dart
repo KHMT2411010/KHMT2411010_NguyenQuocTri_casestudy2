@@ -1,4 +1,3 @@
-
 import 'user.dart';
 
 class AppTask {
@@ -54,9 +53,7 @@ class AppTask {
 
   static AppUser? _readUser(dynamic value) {
     if (value is Map) {
-      return AppUser.fromJson(
-        Map<String, dynamic>.from(value),
-      );
+      return AppUser.fromJson(Map<String, dynamic>.from(value));
     }
 
     return null;
@@ -70,9 +67,7 @@ class AppTask {
   factory AppTask.fromJson(Map<String, dynamic> json) {
     final rawAssignees = json['assigneeIds'];
 
-    final members = rawAssignees is List
-        ? rawAssignees
-        : <dynamic>[];
+    final members = rawAssignees is List ? rawAssignees : <dynamic>[];
 
     final creatorData = json['createdBy'];
     final primaryData = json['primaryAssigneeId'];
@@ -90,15 +85,9 @@ class AppTask {
       createdById: _readId(creatorData),
       creator: _readUser(creatorData),
 
-      assigneeIds: members
-          .map(_readId)
-          .whereType<String>()
-          .toList(),
+      assigneeIds: members.map(_readId).whereType<String>().toList(),
 
-      assignees: members
-          .map(_readUser)
-          .whereType<AppUser>()
-          .toList(),
+      assignees: members.map(_readUser).whereType<AppUser>().toList(),
 
       primaryAssigneeId: _readId(primaryData),
       primaryAssignee: _readUser(primaryData),
@@ -123,11 +112,7 @@ class AppTask {
 
     final today = DateTime(now.year, now.month, now.day);
 
-    final deadline = DateTime(
-      dueDate!.year,
-      dueDate!.month,
-      dueDate!.day,
-    );
+    final deadline = DateTime(dueDate!.year, dueDate!.month, dueDate!.day);
 
     return deadline.isBefore(today);
   }
@@ -170,10 +155,8 @@ class AppTask {
       'createdBy': createdById,
       'assigneeIds': assigneeIds,
       'primaryAssigneeId': primaryAssigneeId,
-      if (createdAt != null)
-        'createdAt': createdAt!.toIso8601String(),
-      if (updatedAt != null)
-        'updatedAt': updatedAt!.toIso8601String(),
+      if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
+      if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
     };
   }
 }

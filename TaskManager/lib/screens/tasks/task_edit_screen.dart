@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../services/api_client.dart';
@@ -8,10 +7,7 @@ import 'task_create_screen.dart';
 class TaskEditScreen extends StatelessWidget {
   final Map<String, dynamic> task;
 
-  const TaskEditScreen({
-    super.key,
-    required this.task,
-  });
+  const TaskEditScreen({super.key, required this.task});
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +25,7 @@ class TaskEditScreen extends StatelessWidget {
       ),
       body: TaskEditorFields(
         heading: 'Cập nhật công việc',
-        description:
-        'Điều chỉnh nội dung, mức độ ưu tiên và thời hạn.',
+        description: 'Điều chỉnh nội dung, mức độ ưu tiên và thời hạn.',
         buttonText: 'Lưu thay đổi',
         initialTask: task,
         onSave: (payload) async {
@@ -38,10 +33,7 @@ class TaskEditScreen extends StatelessWidget {
             throw Exception('Không tìm thấy mã công việc');
           }
 
-          await ApiClient.put(
-            '/api/tasks/$taskId',
-            payload,
-          );
+          await ApiClient.put('/api/tasks/$taskId', payload);
         },
       ),
     );

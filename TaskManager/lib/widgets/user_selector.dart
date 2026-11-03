@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class AssignmentMember {
@@ -58,19 +57,14 @@ class _UserSelectorState extends State<UserSelector> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: const Color(0xFFE7ECF5),
-            ),
+            border: Border.all(color: const Color(0xFFE7ECF5)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
-                  Icon(
-                    Icons.groups_2_outlined,
-                    color: blue,
-                  ),
+                  Icon(Icons.groups_2_outlined, color: blue),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -87,11 +81,7 @@ class _UserSelectorState extends State<UserSelector> {
               const SizedBox(height: 8),
               const Text(
                 'Chọn một hoặc nhiều thành viên và chỉ định người phụ trách chính.',
-                style: TextStyle(
-                  color: muted,
-                  fontSize: 13,
-                  height: 1.4,
-                ),
+                style: TextStyle(color: muted, fontSize: 13, height: 1.4),
               ),
               const SizedBox(height: 18),
               TextField(
@@ -105,9 +95,7 @@ class _UserSelectorState extends State<UserSelector> {
                   fillColor: const Color(0xFFF7F9FD),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFE5EAF3),
-                    ),
+                    borderSide: const BorderSide(color: Color(0xFFE5EAF3)),
                   ),
                 ),
               ),
@@ -146,17 +134,14 @@ class _UserSelectorState extends State<UserSelector> {
                 )
               else
                 ...filtered.map((member) {
-                  final selected =
-                  widget.selectedIds.contains(member.id);
+                  final selected = widget.selectedIds.contains(member.id);
                   final isPrimary = widget.primaryId == member.id;
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(11),
                     decoration: BoxDecoration(
-                      color: selected
-                          ? const Color(0xFFF0F4FF)
-                          : Colors.white,
+                      color: selected ? const Color(0xFFF0F4FF) : Colors.white,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: selected
@@ -169,8 +154,7 @@ class _UserSelectorState extends State<UserSelector> {
                         Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor:
-                              const Color(0xFFE4ECFF),
+                              backgroundColor: const Color(0xFFE4ECFF),
                               child: Text(
                                 member.fullName.isNotEmpty
                                     ? member.fullName[0].toUpperCase()
@@ -184,8 +168,7 @@ class _UserSelectorState extends State<UserSelector> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     member.fullName,

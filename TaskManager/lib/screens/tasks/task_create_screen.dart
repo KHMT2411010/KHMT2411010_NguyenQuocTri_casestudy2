@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../services/api_client.dart';
@@ -23,8 +22,7 @@ class TaskCreateScreen extends StatelessWidget {
       ),
       body: TaskEditorFields(
         heading: 'Công việc mới',
-        description:
-        'Thiết lập thông tin và kế hoạch thực hiện.',
+        description: 'Thiết lập thông tin và kế hoạch thực hiện.',
         buttonText: 'Tạo công việc',
         onSave: (payload) async {
           await ApiClient.post('/api/tasks', payload);
@@ -53,8 +51,7 @@ class TaskEditorFields extends StatefulWidget {
   });
 
   @override
-  State<TaskEditorFields> createState() =>
-      _TaskEditorFieldsState();
+  State<TaskEditorFields> createState() => _TaskEditorFieldsState();
 }
 
 class _TaskEditorFieldsState extends State<TaskEditorFields> {
@@ -77,10 +74,8 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
     final task = widget.initialTask;
     if (task == null) return;
 
-    titleController.text =
-        task['title']?.toString() ?? '';
-    descriptionController.text =
-        task['description']?.toString() ?? '';
+    titleController.text = task['title']?.toString() ?? '';
+    descriptionController.text = task['description']?.toString() ?? '';
 
     final savedPriority = task['priority']?.toString();
 
@@ -109,8 +104,7 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor:
-        error ? AppColors.danger : AppColors.success,
+        backgroundColor: error ? AppColors.danger : AppColors.success,
       ),
     );
   }
@@ -123,9 +117,7 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
       initialDate: current ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
-      helpText: start
-          ? 'CHỌN NGÀY BẮT ĐẦU'
-          : 'CHỌN HẠN HOÀN THÀNH',
+      helpText: start ? 'CHỌN NGÀY BẮT ĐẦU' : 'CHỌN HẠN HOÀN THÀNH',
     );
 
     if (selected == null || !mounted) return;
@@ -146,14 +138,8 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
       return;
     }
 
-    if (!AppDateFormatter.isValidRange(
-      startDate,
-      dueDate,
-    )) {
-      showMessage(
-        'Hạn hoàn thành không được trước ngày bắt đầu',
-        error: true,
-      );
+    if (!AppDateFormatter.isValidRange(startDate, dueDate)) {
+      showMessage('Hạn hoàn thành không được trước ngày bắt đầu', error: true);
       return;
     }
 
@@ -218,11 +204,7 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
                   color: const Color(0xFFEDF2FF),
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(
-                  icon,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
+                child: Icon(icon, color: AppColors.primary, size: 20),
               ),
               const SizedBox(width: 11),
               Expanded(
@@ -245,21 +227,18 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
   }
 
   Widget priorityOption(
-      String value,
-      String label,
-      Color color,
-      IconData icon,
-      ) {
+    String value,
+    String label,
+    Color color,
+    IconData icon,
+  ) {
     final selected = priority == value;
 
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: () => setState(() => priority = value),
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 15,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
         decoration: BoxDecoration(
           color: selected
               ? color.withValues(alpha: 0.08)
@@ -282,19 +261,13 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
                 style: TextStyle(
                   color: selected ? color : AppColors.navy,
                   fontSize: 13,
-                  fontWeight: selected
-                      ? FontWeight.w800
-                      : FontWeight.w500,
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
                 ),
               ),
             ),
             if (selected) ...[
               const SizedBox(width: 5),
-              Icon(
-                Icons.check_circle,
-                color: color,
-                size: 16,
-              ),
+              Icon(Icons.check_circle, color: color, size: 16),
             ],
           ],
         ),
@@ -302,11 +275,7 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
     );
   }
 
-  Widget dateField(
-      String label,
-      DateTime? date,
-      bool start,
-      ) {
+  Widget dateField(String label, DateTime? date, bool start) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -323,9 +292,7 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFF),
             borderRadius: BorderRadius.circular(13),
-            border: Border.all(
-              color: const Color(0xFFE2E9F3),
-            ),
+            border: Border.all(color: const Color(0xFFE2E9F3)),
           ),
           child: Row(
             children: [
@@ -368,10 +335,7 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
               if (date != null)
                 IconButton(
                   tooltip: 'Bỏ chọn ngày',
-                  icon: const Icon(
-                    Icons.close_rounded,
-                    size: 19,
-                  ),
+                  icon: const Icon(Icons.close_rounded, size: 19),
                   onPressed: () {
                     setState(() {
                       if (start) {
@@ -396,8 +360,7 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
         final compact = viewport.maxWidth < 600;
 
         return SingleChildScrollView(
-          keyboardDismissBehavior:
-          ScrollViewKeyboardDismissBehavior.onDrag,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: EdgeInsets.fromLTRB(
             compact ? 14 : 24,
             18,
@@ -410,23 +373,18 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
               child: Form(
                 key: formKey,
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(22),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            AppColors.primary,
-                            AppColors.primaryLight,
-                          ],
+                          colors: [AppColors.primary, AppColors.primaryLight],
                         ),
                         borderRadius: BorderRadius.circular(22),
                       ),
                       child: Column(
-                        crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Icon(
                             Icons.assignment_turned_in_outlined,
@@ -464,10 +422,8 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
                             maxLength: 200,
                             decoration: const InputDecoration(
                               labelText: 'Tên công việc *',
-                              hintText:
-                              'Ví dụ: Thiết kế giao diện',
-                              prefixIcon:
-                              Icon(Icons.assignment_outlined),
+                              hintText: 'Ví dụ: Thiết kế giao diện',
+                              prefixIcon: Icon(Icons.assignment_outlined),
                             ),
                             validator: AppValidators.taskTitle,
                           ),
@@ -477,8 +433,7 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
                             maxLines: 4,
                             decoration: const InputDecoration(
                               labelText: 'Mô tả công việc',
-                              hintText:
-                              'Nhập nội dung cần thực hiện...',
+                              hintText: 'Nhập nội dung cần thực hiện...',
                               alignLabelWithHint: true,
                             ),
                           ),
@@ -514,8 +469,7 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
 
                           if (size.maxWidth < 470) {
                             return Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.stretch,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 for (final option in options) ...[
                                   option,
@@ -527,11 +481,8 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
 
                           return Row(
                             children: [
-                              for (var i = 0;
-                              i < options.length;
-                              i++) ...[
-                                if (i != 0)
-                                  const SizedBox(width: 9),
+                              for (var i = 0; i < options.length; i++) ...[
+                                if (i != 0) const SizedBox(width: 9),
                                 Expanded(child: options[i]),
                               ],
                             ],
@@ -585,27 +536,22 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                            BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                         icon: saving
                             ? const SizedBox(
-                          width: 19,
-                          height: 19,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
+                                width: 19,
+                                height: 19,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
                             : const Icon(Icons.save_outlined),
                         label: Text(
-                          saving
-                              ? 'Đang lưu...'
-                              : widget.buttonText,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                          ),
+                          saving ? 'Đang lưu...' : widget.buttonText,
+                          style: const TextStyle(fontWeight: FontWeight.w800),
                         ),
                       ),
                     ),

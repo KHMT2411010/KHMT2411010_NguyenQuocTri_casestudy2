@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../utils/constants.dart';
@@ -10,23 +9,16 @@ class TaskCard extends StatelessWidget {
   final Map<String, dynamic> task;
   final VoidCallback onTap;
 
-  const TaskCard({
-    super.key,
-    required this.task,
-    required this.onTap,
-  });
+  const TaskCard({super.key, required this.task, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final title =
-        task['title']?.toString() ?? 'Không có tên công việc';
+    final title = task['title']?.toString() ?? 'Không có tên công việc';
 
-    final description =
-        task['description']?.toString() ?? '';
+    final description = task['description']?.toString() ?? '';
 
     final status = task['status']?.toString() ?? 'todo';
-    final priority =
-        task['priority']?.toString() ?? 'medium';
+    final priority = task['priority']?.toString() ?? 'medium';
 
     final color = TaskValues.statusColor(status);
 
@@ -35,17 +27,15 @@ class TaskCard extends StatelessWidget {
       fallback: 'Chưa đặt hạn',
     );
 
-    final overdue = status != 'completed' &&
-        AppDateFormatter.isOverdue(task['dueDate']);
+    final overdue =
+        status != 'completed' && AppDateFormatter.isOverdue(task['dueDate']);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 13),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.border,
-        ),
+        border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
             color: Color(0x080E214A),
@@ -65,16 +55,14 @@ class TaskCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       width: 47,
                       height: 47,
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: 0.10),
-                        borderRadius:
-                        BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Icon(
                         status == 'completed'
@@ -130,10 +118,7 @@ class TaskCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 15),
-                const Divider(
-                  height: 1,
-                  color: AppColors.border,
-                ),
+                const Divider(height: 1, color: AppColors.border),
                 const SizedBox(height: 13),
                 Row(
                   children: [
@@ -142,9 +127,7 @@ class TaskCard extends StatelessWidget {
                           ? Icons.warning_amber_rounded
                           : Icons.event_outlined,
                       size: 18,
-                      color: overdue
-                          ? AppColors.danger
-                          : AppColors.muted,
+                      color: overdue ? AppColors.danger : AppColors.muted,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -153,9 +136,7 @@ class TaskCard extends StatelessWidget {
                             ? 'Quá hạn: $dueDate'
                             : 'Hạn hoàn thành: $dueDate',
                         style: TextStyle(
-                          color: overdue
-                              ? AppColors.danger
-                              : AppColors.muted,
+                          color: overdue ? AppColors.danger : AppColors.muted,
                           fontSize: 12,
                           fontWeight: overdue
                               ? FontWeight.w700

@@ -1,12 +1,11 @@
-
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
-  static const FlutterSecureStorage _storage =
-  FlutterSecureStorage();
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();
 
   static String get baseUrl {
     if (kIsWeb) {
@@ -37,16 +36,15 @@ class ApiClient {
 
     return {
       'Content-Type': 'application/json',
-      if (token != null && token.isNotEmpty)
-        'Authorization': 'Bearer $token',
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
     };
   }
 
   static Future<Map<String, dynamic>> _request(
-      String method,
-      String endpoint, {
-        Map<String, dynamic>? body,
-      }) async {
+    String method,
+    String endpoint, {
+    Map<String, dynamic>? body,
+  }) async {
     final uri = Uri.parse('$baseUrl$endpoint');
     final headers = await _headers();
 
@@ -61,27 +59,15 @@ class ApiClient {
           break;
 
         case 'POST':
-          response = await http.post(
-            uri,
-            headers: headers,
-            body: encodedBody,
-          );
+          response = await http.post(uri, headers: headers, body: encodedBody);
           break;
 
         case 'PUT':
-          response = await http.put(
-            uri,
-            headers: headers,
-            body: encodedBody,
-          );
+          response = await http.put(uri, headers: headers, body: encodedBody);
           break;
 
         case 'PATCH':
-          response = await http.patch(
-            uri,
-            headers: headers,
-            body: encodedBody,
-          );
+          response = await http.patch(uri, headers: headers, body: encodedBody);
           break;
 
         case 'DELETE':
@@ -109,47 +95,39 @@ class ApiClient {
       throw Exception('Máy chủ trả về dữ liệu không hợp lệ');
     }
 
-    if (response.statusCode < 200 ||
-        response.statusCode >= 300) {
-      throw Exception(
-        data['message'] ??
-            'Lỗi HTTP ${response.statusCode}',
-      );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(data['message'] ?? 'Lỗi HTTP ${response.statusCode}');
     }
 
     return data;
   }
 
-  static Future<Map<String, dynamic>> get(
-      String endpoint,
-      ) {
+  static Future<Map<String, dynamic>> get(String endpoint) {
     return _request('GET', endpoint);
   }
 
   static Future<Map<String, dynamic>> post(
-      String endpoint,
-      Map<String, dynamic> body,
-      ) {
+    String endpoint,
+    Map<String, dynamic> body,
+  ) {
     return _request('POST', endpoint, body: body);
   }
 
   static Future<Map<String, dynamic>> put(
-      String endpoint,
-      Map<String, dynamic> body,
-      ) {
+    String endpoint,
+    Map<String, dynamic> body,
+  ) {
     return _request('PUT', endpoint, body: body);
   }
 
   static Future<Map<String, dynamic>> patch(
-      String endpoint,
-      Map<String, dynamic> body,
-      ) {
+    String endpoint,
+    Map<String, dynamic> body,
+  ) {
     return _request('PATCH', endpoint, body: body);
   }
 
-  static Future<Map<String, dynamic>> delete(
-      String endpoint,
-      ) {
+  static Future<Map<String, dynamic>> delete(String endpoint) {
     return _request('DELETE', endpoint);
   }
 }

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../utils/constants.dart';
@@ -47,10 +46,7 @@ class LoadingView extends StatelessWidget {
     }
 
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(30),
-        child: content,
-      ),
+      child: Padding(padding: const EdgeInsets.all(30), child: content),
     );
   }
 }

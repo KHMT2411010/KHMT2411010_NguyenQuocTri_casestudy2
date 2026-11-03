@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../services/api_client.dart';
@@ -13,14 +12,10 @@ import 'task_edit_screen.dart';
 class TaskDetailScreen extends StatefulWidget {
   final String taskId;
 
-  const TaskDetailScreen({
-    super.key,
-    required this.taskId,
-  });
+  const TaskDetailScreen({super.key, required this.taskId});
 
   @override
-  State<TaskDetailScreen> createState() =>
-      _TaskDetailScreenState();
+  State<TaskDetailScreen> createState() => _TaskDetailScreenState();
 }
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
@@ -62,17 +57,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     return id.isEmpty ? 'Chưa phân công' : 'Thành viên';
   }
 
-  void _showMessage(
-      String message, {
-        bool error = false,
-      }) {
+  void _showMessage(String message, {bool error = false}) {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor:
-        error ? AppColors.danger : AppColors.success,
+        backgroundColor: error ? AppColors.danger : AppColors.success,
       ),
     );
   }
@@ -93,8 +84,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
     try {
       final me = await ApiClient.get('/api/auth/me');
-      final result =
-      await _taskService.getTaskById(widget.taskId);
+      final result = await _taskService.getTaskById(widget.taskId);
 
       if (!mounted) return;
 
@@ -108,8 +98,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       if (!mounted) return;
 
       setState(() {
-        errorMessage =
-            e.toString().replaceFirst('Exception: ', '');
+        errorMessage = e.toString().replaceFirst('Exception: ', '');
       });
     } finally {
       if (mounted) {
@@ -124,19 +113,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     setState(() => changingStatus = true);
 
     try {
-      await _taskService.updateStatus(
-        widget.taskId,
-        status,
-      );
+      await _taskService.updateStatus(widget.taskId, status);
 
       await loadDetail();
 
       _showMessage('Cập nhật trạng thái thành công');
     } catch (e) {
-      _showMessage(
-        e.toString().replaceFirst('Exception: ', ''),
-        error: true,
-      );
+      _showMessage(e.toString().replaceFirst('Exception: ', ''), error: true);
     } finally {
       if (mounted) {
         setState(() => changingStatus = false);
@@ -150,9 +133,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
     final changed = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (_) => TaskEditScreen(task: current),
-      ),
+      MaterialPageRoute(builder: (_) => TaskEditScreen(task: current)),
     );
 
     if (changed == true && mounted) {
@@ -166,26 +147,20 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Text('Xóa công việc?'),
         content: const Text(
           'Công việc sẽ bị xóa khỏi hệ thống. '
-              'Bạn có chắc chắn muốn tiếp tục?',
+          'Bạn có chắc chắn muốn tiếp tục?',
         ),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Hủy'),
           ),
           FilledButton.icon(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.danger,
-            ),
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () => Navigator.pop(dialogContext, true),
             icon: const Icon(Icons.delete_outline),
             label: const Text('Xóa công việc'),
           ),
@@ -203,10 +178,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (e) {
-      _showMessage(
-        e.toString().replaceFirst('Exception: ', ''),
-        error: true,
-      );
+      _showMessage(e.toString().replaceFirst('Exception: ', ''), error: true);
     } finally {
       if (mounted) setState(() => deleting = false);
     }
@@ -214,21 +186,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
   // Hai route này được đăng ký khi hoàn thiện app.dart.
   Future<void> openAssignment() async {
-    await Navigator.pushNamed(
-      context,
-      '/assignment',
-      arguments: widget.taskId,
-    );
+    await Navigator.pushNamed(context, '/assignment', arguments: widget.taskId);
 
     if (mounted) await loadDetail();
   }
 
   Future<void> openSharing() async {
-    await Navigator.pushNamed(
-      context,
-      '/sharing',
-      arguments: widget.taskId,
-    );
+    await Navigator.pushNamed(context, '/sharing', arguments: widget.taskId);
 
     if (mounted) await loadDetail();
   }
@@ -263,11 +227,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   color: const Color(0xFFEDF2FF),
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(
-                  icon,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
+                child: Icon(icon, color: AppColors.primary, size: 20),
               ),
               const SizedBox(width: 11),
               Expanded(
@@ -299,11 +259,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: AppColors.muted,
-            size: 20,
-          ),
+          Icon(icon, color: AppColors.muted, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -311,10 +267,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: AppColors.muted,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -341,20 +294,14 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }) {
     final buttonStyle = primary
         ? FilledButton.styleFrom(
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(
-        vertical: 16,
-        horizontal: 17,
-      ),
-    )
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 17),
+          )
         : OutlinedButton.styleFrom(
-      foregroundColor: AppColors.primary,
-      padding: const EdgeInsets.symmetric(
-        vertical: 16,
-        horizontal: 17,
-      ),
-    );
+            foregroundColor: AppColors.primary,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 17),
+          );
 
     if (primary) {
       return FilledButton.icon(
@@ -389,9 +336,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             Text(
               errorMessage ?? 'Không tìm thấy công việc',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.navy,
-              ),
+              style: const TextStyle(color: AppColors.navy),
             ),
             const SizedBox(height: 18),
             OutlinedButton.icon(
@@ -414,8 +359,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         ? data!['assigneeIds'] as List
         : <dynamic>[];
 
-    final description =
-        data?['description']?.toString().trim() ?? '';
+    final description = data?['description']?.toString().trim() ?? '';
 
     final primary = data?['primaryAssigneeId'];
 
@@ -437,256 +381,209 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         ],
       ),
       body: loading
-          ? const LoadingView(
-        message: 'Đang tải thông tin công việc...',
-      )
+          ? const LoadingView(message: 'Đang tải thông tin công việc...')
           : errorMessage != null || data == null
           ? _errorView()
           : LayoutBuilder(
-        builder: (context, viewport) {
-          final compact =
-              viewport.maxWidth < 600;
+              builder: (context, viewport) {
+                final compact = viewport.maxWidth < 600;
 
-          return ListView(
-            padding: EdgeInsets.fromLTRB(
-              compact ? 14 : 24,
-              18,
-              compact ? 14 : 24,
-              38,
-            ),
-            children: [
-              Center(
-                child: ConstrainedBox(
-                  constraints:
-                  const BoxConstraints(
-                    maxWidth: 850,
+                return ListView(
+                  padding: EdgeInsets.fromLTRB(
+                    compact ? 14 : 24,
+                    18,
+                    compact ? 14 : 24,
+                    38,
                   ),
-                  child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(23),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              AppColors.primary,
-                              AppColors.primaryLight,
+                  children: [
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 850),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(23),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    AppColors.primary,
+                                    AppColors.primaryLight,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(22),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(
+                                    Icons.assignment_turned_in_outlined,
+                                    size: 34,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Text(
+                                    data['title']?.toString() ?? 'Công việc',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 23,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Wrap(
+                                    spacing: 9,
+                                    runSpacing: 9,
+                                    children: [
+                                      StatusBadge(status: status),
+                                      PriorityBadge(
+                                        priority:
+                                            data['priority']?.toString() ??
+                                            'medium',
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 17),
+                            _section(
+                              icon: Icons.description_outlined,
+                              title: 'Mô tả công việc',
+                              child: Text(
+                                description.isEmpty
+                                    ? 'Chưa có mô tả công việc.'
+                                    : description,
+                                style: const TextStyle(
+                                  color: AppColors.navy,
+                                  height: 1.6,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _section(
+                              icon: Icons.info_outline,
+                              title: 'Thông tin thực hiện',
+                              child: Column(
+                                children: [
+                                  _infoRow(
+                                    icon: Icons.person_outline,
+                                    label: 'Người tạo',
+                                    value: _personName(data['createdBy']),
+                                  ),
+                                  _infoRow(
+                                    icon: Icons.event_outlined,
+                                    label: 'Ngày bắt đầu',
+                                    value: AppDateFormatter.format(
+                                      data['startDate'],
+                                    ),
+                                  ),
+                                  _infoRow(
+                                    icon: Icons.event_available_outlined,
+                                    label: 'Hạn hoàn thành',
+                                    value: AppDateFormatter.format(
+                                      data['dueDate'],
+                                    ),
+                                  ),
+                                  _infoRow(
+                                    icon: Icons.star_outline,
+                                    label: 'Người phụ trách chính',
+                                    value: _personName(primary),
+                                  ),
+                                  _infoRow(
+                                    icon: Icons.groups_outlined,
+                                    label: 'Người được giao',
+                                    value: assignees.isEmpty
+                                        ? 'Chưa giao cho ai'
+                                        : assignees.map(_personName).join(', '),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _section(
+                              icon: Icons.track_changes_outlined,
+                              title: 'Trạng thái công việc',
+                              child: DropdownButtonFormField<String>(
+                                key: ValueKey(status),
+                                initialValue:
+                                    const [
+                                      'todo',
+                                      'in_progress',
+                                      'completed',
+                                    ].contains(status)
+                                    ? status
+                                    : 'todo',
+                                decoration: const InputDecoration(
+                                  labelText: 'Trạng thái hiện tại',
+                                  prefixIcon: Icon(Icons.flag_circle_outlined),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'todo',
+                                    child: Text('Chưa thực hiện'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'in_progress',
+                                    child: Text('Đang thực hiện'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'completed',
+                                    child: Text('Đã hoàn thành'),
+                                  ),
+                                ],
+                                onChanged: changingStatus
+                                    ? null
+                                    : (value) {
+                                        if (value != null && value != status) {
+                                          changeStatus(value);
+                                        }
+                                      },
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            _actionButton(
+                              icon: Icons.edit_outlined,
+                              title: 'Chỉnh sửa công việc',
+                              onPressed: editTask,
+                              primary: true,
+                            ),
+                            if (isOwner) ...[
+                              const SizedBox(height: 11),
+                              _actionButton(
+                                icon: Icons.group_add_outlined,
+                                title: 'Giao công việc',
+                                onPressed: openAssignment,
+                              ),
+                              const SizedBox(height: 11),
+                              _actionButton(
+                                icon: Icons.share_outlined,
+                                title: 'Quản lý chia sẻ',
+                                onPressed: openSharing,
+                              ),
+                              const SizedBox(height: 14),
+                              TextButton.icon(
+                                onPressed: deleting ? null : deleteTask,
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: AppColors.danger,
+                                ),
+                                label: Text(
+                                  deleting ? 'Đang xóa...' : 'Xóa công việc',
+                                  style: const TextStyle(
+                                    color: AppColors.danger,
+                                  ),
+                                ),
+                              ),
                             ],
-                          ),
-                          borderRadius:
-                          BorderRadius.circular(22),
-                        ),
-                        child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              Icons
-                                  .assignment_turned_in_outlined,
-                              size: 34,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(height: 14),
-                            Text(
-                              data['title']
-                                  ?.toString() ??
-                                  'Công việc',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 23,
-                                fontWeight:
-                                FontWeight.w900,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            Wrap(
-                              spacing: 9,
-                              runSpacing: 9,
-                              children: [
-                                StatusBadge(
-                                  status: status,
-                                ),
-                                PriorityBadge(
-                                  priority: data[
-                                  'priority']
-                                      ?.toString() ??
-                                      'medium',
-                                ),
-                              ],
-                            ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 17),
-                      _section(
-                        icon: Icons
-                            .description_outlined,
-                        title: 'Mô tả công việc',
-                        child: Text(
-                          description.isEmpty
-                              ? 'Chưa có mô tả công việc.'
-                              : description,
-                          style: const TextStyle(
-                            color: AppColors.navy,
-                            height: 1.6,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _section(
-                        icon: Icons.info_outline,
-                        title: 'Thông tin thực hiện',
-                        child: Column(
-                          children: [
-                            _infoRow(
-                              icon: Icons
-                                  .person_outline,
-                              label: 'Người tạo',
-                              value: _personName(
-                                data['createdBy'],
-                              ),
-                            ),
-                            _infoRow(
-                              icon: Icons
-                                  .event_outlined,
-                              label: 'Ngày bắt đầu',
-                              value:
-                              AppDateFormatter.format(
-                                data['startDate'],
-                              ),
-                            ),
-                            _infoRow(
-                              icon: Icons
-                                  .event_available_outlined,
-                              label: 'Hạn hoàn thành',
-                              value:
-                              AppDateFormatter.format(
-                                data['dueDate'],
-                              ),
-                            ),
-                            _infoRow(
-                              icon: Icons.star_outline,
-                              label:
-                              'Người phụ trách chính',
-                              value: _personName(
-                                primary,
-                              ),
-                            ),
-                            _infoRow(
-                              icon: Icons
-                                  .groups_outlined,
-                              label: 'Người được giao',
-                              value: assignees.isEmpty
-                                  ? 'Chưa giao cho ai'
-                                  : assignees
-                                  .map(_personName)
-                                  .join(', '),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _section(
-                        icon: Icons
-                            .track_changes_outlined,
-                        title: 'Trạng thái công việc',
-                        child:
-                        DropdownButtonFormField<String>(
-                          key: ValueKey(status),
-                          initialValue: const [
-                            'todo',
-                            'in_progress',
-                            'completed',
-                          ].contains(status)
-                              ? status
-                              : 'todo',
-                          decoration: const InputDecoration(
-                            labelText:
-                            'Trạng thái hiện tại',
-                            prefixIcon: Icon(
-                              Icons
-                                  .flag_circle_outlined,
-                            ),
-                          ),
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'todo',
-                              child: Text(
-                                'Chưa thực hiện',
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: 'in_progress',
-                              child: Text(
-                                'Đang thực hiện',
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: 'completed',
-                              child: Text(
-                                'Đã hoàn thành',
-                              ),
-                            ),
-                          ],
-                          onChanged: changingStatus
-                              ? null
-                              : (value) {
-                            if (value != null &&
-                                value != status) {
-                              changeStatus(value);
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      _actionButton(
-                        icon: Icons.edit_outlined,
-                        title:
-                        'Chỉnh sửa công việc',
-                        onPressed: editTask,
-                        primary: true,
-                      ),
-                      if (isOwner) ...[
-                        const SizedBox(height: 11),
-                        _actionButton(
-                          icon: Icons
-                              .group_add_outlined,
-                          title: 'Giao công việc',
-                          onPressed: openAssignment,
-                        ),
-                        const SizedBox(height: 11),
-                        _actionButton(
-                          icon: Icons.share_outlined,
-                          title: 'Quản lý chia sẻ',
-                          onPressed: openSharing,
-                        ),
-                        const SizedBox(height: 14),
-                        TextButton.icon(
-                          onPressed:
-                          deleting ? null : deleteTask,
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            color: AppColors.danger,
-                          ),
-                          label: Text(
-                            deleting
-                                ? 'Đang xóa...'
-                                : 'Xóa công việc',
-                            style: const TextStyle(
-                              color: AppColors.danger,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              )
-            ],
-          );
-        },
-      ),
+                    ),
+                  ],
+                );
+              },
+            ),
     );
   }
 }
