@@ -91,6 +91,7 @@ class _AuthGateState extends State<AuthGate> {
 }
 
 // DANG NHAP VA DANG KY
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -102,26 +103,44 @@ class _LoginScreenState extends State<LoginScreen> {
   final name = TextEditingController();
   final email = TextEditingController();
   final password = TextEditingController();
+  final confirmPassword = TextEditingController();
 
   bool register = false;
   bool loading = false;
+  bool showPassword = false;
+
+  static const blue = Color(0xFF315CEB);
+  static const navy = Color(0xFF17233F);
+  static const muted = Color(0xFF78869B);
 
   @override
   void dispose() {
     name.dispose();
     email.dispose();
     password.dispose();
+    confirmPassword.dispose();
     super.dispose();
   }
 
   Future<void> submit() async {
-    if (email.text.trim().isEmpty || password.text.isEmpty) {
-      showError(context, 'Vui lòng nhập email và mật khẩu');
+    if (register && name.text.trim().isEmpty) {
+      showError(context, 'Vui lòng nhập họ và tên');
       return;
     }
 
-    if (register && name.text.trim().isEmpty) {
-      showError(context, 'Vui lòng nhập họ tên');
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+        .hasMatch(email.text.trim())) {
+      showError(context, 'Email không hợp lệ');
+      return;
+    }
+
+    if (password.text.isEmpty) {
+      showError(context, 'Vui lòng nhập mật khẩu');
+      return;
+    }
+
+    if (register && password.text != confirmPassword.text) {
+      showError(context, 'Xác nhận mật khẩu không khớp');
       return;
     }
 
@@ -142,7 +161,29 @@ class _LoginScreenState extends State<LoginScreen> {
         },
       );
 
-      await ApiClient.saveToken(data['token'].toString());
+      if (!mounted) return;
+
+      if (register) {
+        setState(() {
+          register = false;
+          password.clear();
+          confirmPassword.clear();
+        });
+
+        showSuccess(
+          context,
+          'Đăng ký thành công! Hãy đăng nhập.',
+        );
+        return;
+      }
+
+      final token = data['token']?.toString();
+
+      if (token == null || token.isEmpty) {
+        throw Exception('Không nhận được token đăng nhập');
+      }
+
+      await ApiClient.saveToken(token);
 
       if (!mounted) return;
 
@@ -159,83 +200,255 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Widget inputField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+    bool isPassword = false,
+    TextInputType? keyboard,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboard,
+      obscureText: isPassword && !showPassword,
+      textInputAction: TextInputAction.next,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: blue, size: 21),
+        suffixIcon: isPassword
+            ? IconButton(
+          tooltip: showPassword
+              ? 'Ẩn mật khẩu'
+              : 'Hiện mật khẩu',
+          onPressed: () {
+            setState(() => showPassword = !showPassword);
+          },
+          icon: Icon(
+            showPassword
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+          ),
+        )
+            : null,
+        filled: true,
+        fillColor: const Color(0xFFF8FAFF),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 430),
-            child: Card(
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.task_alt,
-                      size: 65,
-                      color: Color(0xFF2563EB),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      register ? 'Đăng ký tài khoản' : 'Đăng nhập',
-                      style: const TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    if (register) ...[
-                      TextField(
-                        controller: name,
-                        decoration: const InputDecoration(
-                          labelText: 'Họ và tên',
+      backgroundColor: const Color(0xFFF5F7FC),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 28,
+            ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 450),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 78,
+                      height: 78,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF315CEB),
+                            Color(0xFF6898FF),
+                          ],
                         ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x33315CEB),
+                            blurRadius: 24,
+                            offset: Offset(0, 10),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                    ],
-                    TextField(
-                      controller: email,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: password,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Mật khẩu',
+                      child: const Icon(
+                        Icons.task_alt_rounded,
+                        size: 43,
+                        color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: loading ? null : submit,
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'TaskFlow',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: navy,
+                      letterSpacing: -0.7,
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    register
+                        ? 'Bắt đầu hành trình làm việc hiệu quả'
+                        : 'Sắp xếp công việc, kết nối đội nhóm',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: muted,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 27),
+                  Container(
+                    padding: const EdgeInsets.all(23),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: const Color(0xFFE8EDF5),
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x080E214A),
+                          blurRadius: 25,
+                          offset: Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          register
+                              ? 'Tạo tài khoản'
+                              : 'Chào mừng trở lại!',
+                          style: const TextStyle(
+                            fontSize: 23,
+                            fontWeight: FontWeight.w800,
+                            color: navy,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          register
+                              ? 'Điền thông tin để tham gia TaskFlow.'
+                              : 'Đăng nhập để tiếp tục công việc.',
+                          style: const TextStyle(
+                            color: muted,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        if (register) ...[
+                          inputField(
+                            label: 'Họ và tên',
+                            controller: name,
+                            icon: Icons.person_outline_rounded,
+                          ),
+                          const SizedBox(height: 15),
+                        ],
+                        inputField(
+                          label: 'Địa chỉ email',
+                          controller: email,
+                          icon: Icons.alternate_email_rounded,
+                          keyboard: TextInputType.emailAddress,
+                        ),
+                        const SizedBox(height: 15),
+                        inputField(
+                          label: 'Mật khẩu',
+                          controller: password,
+                          icon: Icons.lock_outline_rounded,
+                          isPassword: true,
+                        ),
+                        if (register) ...[
+                          const SizedBox(height: 15),
+                          inputField(
+                            label: 'Xác nhận mật khẩu',
+                            controller: confirmPassword,
+                            icon: Icons.verified_user_outlined,
+                            isPassword: true,
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          height: 54,
+                          child: FilledButton(
+                            onPressed: loading ? null : submit,
+                            child: loading
+                                ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                                : Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  register
+                                      ? 'Tạo tài khoản'
+                                      : 'Đăng nhập',
+                                ),
+                                const SizedBox(width: 9),
+                                const Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 19,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 13),
+                        TextButton(
+                          onPressed: loading
+                              ? null
+                              : () {
+                            setState(() {
+                              register = !register;
+                              password.clear();
+                              confirmPassword.clear();
+                            });
+                          },
+                          child: Text(
+                            register
+                                ? 'Đã có tài khoản? Đăng nhập'
+                                : 'Chưa có tài khoản? Đăng ký ngay',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 23),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.lock_outline,
+                        color: muted,
+                        size: 15,
+                      ),
+                      SizedBox(width: 6),
+                      Flexible(
                         child: Text(
-                          loading
-                              ? 'Đang xử lý...'
-                              : register ? 'Đăng ký' : 'Đăng nhập',
+                          'Quản lý công việc an toàn và hiệu quả',
+                          style: TextStyle(
+                            color: muted,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
-                    ),
-                    TextButton(
-                      onPressed: loading
-                          ? null
-                          : () => setState(() => register = !register),
-                      child: Text(
-                        register
-                            ? 'Đã có tài khoản? Đăng nhập'
-                            : 'Chưa có tài khoản? Đăng ký',
-                      ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
@@ -245,7 +458,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
+
 // DANH SACH CONG VIEC
+
 class TaskListScreen extends StatefulWidget {
   const TaskListScreen({super.key});
 
@@ -255,8 +470,15 @@ class TaskListScreen extends StatefulWidget {
 
 class _TaskListScreenState extends State<TaskListScreen> {
   List<dynamic> tasks = [];
+  final searchController = TextEditingController();
+
   bool loading = true;
   String scope = 'all';
+  String query = '';
+
+  static const blue = Color(0xFF315CEB);
+  static const navy = Color(0xFF17233F);
+  static const muted = Color(0xFF78869B);
 
   @override
   void initState() {
@@ -264,7 +486,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
     loadTasks();
   }
 
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
   Future<void> loadTasks() async {
+    if (!mounted) return;
     setState(() => loading = true);
 
     try {
@@ -274,13 +503,13 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
       final data = await ApiClient.get(endpoint);
 
-      if (mounted) {
-        setState(() {
-          tasks = data['data'] as List<dynamic>? ?? [];
-        });
-      }
+      if (!mounted) return;
+
+      setState(() {
+        tasks = data['data'] as List<dynamic>? ?? [];
+      });
     } catch (e) {
-      showError(context, e);
+      if (mounted) showError(context, e);
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -292,7 +521,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(),
+      ),
           (_) => false,
     );
   }
@@ -304,17 +535,19 @@ class _TaskListScreenState extends State<TaskListScreen> {
         builder: (_) => const TaskFormScreen(),
       ),
     );
-    loadTasks();
+    if (mounted) loadTasks();
   }
 
   Future<void> openDetail(Map<String, dynamic> task) async {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => TaskDetailScreen(taskId: task['_id'].toString()),
+        builder: (_) => TaskDetailScreen(
+          taskId: task['_id'].toString(),
+        ),
       ),
     );
-    loadTasks();
+    if (mounted) loadTasks();
   }
 
   String statusText(String value) {
@@ -330,48 +563,420 @@ class _TaskListScreenState extends State<TaskListScreen> {
     }
   }
 
+  Color statusColor(String status) {
+    switch (status) {
+      case 'completed':
+        return const Color(0xFF199C77);
+      case 'in_progress':
+        return blue;
+      default:
+        return const Color(0xFFF0A33A);
+    }
+  }
+
+  Color priorityColor(String value) {
+    switch (value) {
+      case 'high':
+        return const Color(0xFFE45656);
+      case 'low':
+        return const Color(0xFF199C77);
+      default:
+        return const Color(0xFFE99B30);
+    }
+  }
+
+  String priorityText(String value) {
+    switch (value) {
+      case 'high':
+        return 'Cao';
+      case 'low':
+        return 'Thấp';
+      default:
+        return 'Trung bình';
+    }
+  }
+
+  String formatDate(dynamic value) {
+    final date = DateTime.tryParse(value?.toString() ?? '');
+    if (date == null) return 'Chưa đặt hạn';
+
+    return '${date.day.toString().padLeft(2, '0')}/'
+        '${date.month.toString().padLeft(2, '0')}/'
+        '${date.year}';
+  }
+
+  Widget metric(
+      String title,
+      int count,
+      IconData icon,
+      ) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: 13,
+          horizontal: 5,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0x25FFFFFF),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 20, color: Colors.white),
+            const SizedBox(height: 7),
+            Text(
+              '$count',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 23,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 10,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget pill(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 7,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(9),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget taskCard(Map<String, dynamic> task) {
+    final title = task['title']?.toString() ?? 'Không có tên';
+    final description = task['description']?.toString() ?? '';
+    final status = task['status']?.toString() ?? 'todo';
+    final priority = task['priority']?.toString() ?? 'medium';
+
+    final color = statusColor(status);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 13),
+      child: Card(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => openDetail(task),
+          child: Padding(
+            padding: const EdgeInsets.all(17),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      height: 46,
+                      width: 46,
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        status == 'completed'
+                            ? Icons.task_alt_rounded
+                            : Icons.assignment_outlined,
+                        color: color,
+                        size: 25,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: navy,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: muted,
+                    ),
+                  ],
+                ),
+                if (description.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: muted,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 15),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    pill(statusText(status), color),
+                    pill(
+                      'Ưu tiên: ${priorityText(priority)}',
+                      priorityColor(priority),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const Divider(
+                  color: Color(0xFFEDF0F6),
+                  height: 1,
+                ),
+                const SizedBox(height: 13),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.event_outlined,
+                      size: 17,
+                      color: muted,
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        'Hạn hoàn thành: ${formatDate(task['dueDate'])}',
+                        style: const TextStyle(
+                          color: muted,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final visibleTasks = tasks.where((item) {
+      if (item is! Map) return false;
+
+      final title = item['title']?.toString().toLowerCase() ?? '';
+      final description =
+          item['description']?.toString().toLowerCase() ?? '';
+
+      final keyword = query.trim().toLowerCase();
+
+      return title.contains(keyword) ||
+          description.contains(keyword);
+    }).toList();
+
+    final completed = tasks.where(
+          (t) => t is Map && t['status'] == 'completed',
+    ).length;
+
+    final progress = tasks.where(
+          (t) => t is Map && t['status'] == 'in_progress',
+    ).length;
+
+    final pending = tasks.length - completed - progress;
+
+    final percentage = tasks.isEmpty
+        ? 0.0
+        : completed / tasks.length;
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FC),
       appBar: AppBar(
-        title: const Text('Quản lý công việc'),
-        backgroundColor: Colors.white,
+        title: const Text('TaskFlow'),
         actions: [
           IconButton(
+            tooltip: 'Làm mới',
             onPressed: loadTasks,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
           ),
           IconButton(
             tooltip: 'Hồ sơ cá nhân',
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const ProfileScreen(),
-                ),
-              );
-            },
+            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProfileScreen(),
+              ),
+            ),
           ),
           IconButton(
+            tooltip: 'Đăng xuất',
+            icon: const Icon(Icons.logout_rounded),
             onPressed: logout,
-            icon: const Icon(Icons.logout),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: blue,
+        foregroundColor: Colors.white,
         onPressed: openCreate,
-        icon: const Icon(Icons.add),
-        label: const Text('Thêm công việc'),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Tạo công việc'),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: DropdownButtonFormField<String>(
+      body: RefreshIndicator(
+        onRefresh: loadTasks,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(17, 12, 17, 110),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(21),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF315CEB),
+                    Color(0xFF6898FF),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x20315CEB),
+                    blurRadius: 20,
+                    offset: Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.space_dashboard_outlined,
+                        size: 19,
+                        color: Colors.white70,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'TỔNG QUAN CÔNG VIỆC',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          letterSpacing: 1,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 17),
+                  Text(
+                    '${tasks.length} công việc',
+                    style: const TextStyle(
+                      fontSize: 29,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    'Đã hoàn thành ${(percentage * 100).round()}%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: percentage,
+                      minHeight: 8,
+                      color: Colors.white,
+                      backgroundColor: const Color(0x55FFFFFF),
+                    ),
+                  ),
+                  const SizedBox(height: 23),
+                  Row(
+                    children: [
+                      metric(
+                        'Cần làm',
+                        pending,
+                        Icons.pending_actions_outlined,
+                      ),
+                      const SizedBox(width: 9),
+                      metric(
+                        'Đang làm',
+                        progress,
+                        Icons.timelapse_rounded,
+                      ),
+                      const SizedBox(width: 9),
+                      metric(
+                        'Hoàn thành',
+                        completed,
+                        Icons.check_circle_outline,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 25),
+            const Text(
+              'Công việc của bạn',
+              style: TextStyle(
+                color: navy,
+                fontSize: 21,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Theo dõi và quản lý tiến độ mỗi ngày',
+              style: TextStyle(
+                color: muted,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 19),
+            TextField(
+              controller: searchController,
+              onChanged: (value) {
+                setState(() => query = value);
+              },
+              decoration: const InputDecoration(
+                hintText: 'Tìm kiếm công việc...',
+                prefixIcon: Icon(Icons.search_rounded),
+              ),
+            ),
+            const SizedBox(height: 13),
+            DropdownButtonFormField<String>(
               initialValue: scope,
               decoration: const InputDecoration(
-                labelText: 'Lọc công việc',
+                labelText: 'Hiển thị theo',
+                prefixIcon: Icon(Icons.filter_list_rounded),
               ),
               items: const [
                 DropdownMenuItem(
@@ -398,73 +1003,92 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 }
               },
             ),
-          ),
-          Expanded(
-            child: loading
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-              onRefresh: loadTasks,
-              child: tasks.isEmpty
-                  ? ListView(
-                children: const [
-                  SizedBox(height: 140),
-                  Center(
-                    child: Text('Chưa có công việc nào'),
-                  ),
-                ],
-              )
-                  : ListView.builder(
-                itemCount: tasks.length,
-                padding: const EdgeInsets.fromLTRB(
-                  12, 0, 12, 90,
-                ),
-                itemBuilder: (context, index) {
-                  final task = Map<String, dynamic>.from(
-                    tasks[index],
-                  );
-                  final title =
-                      task['title']?.toString() ?? '';
-                  final status =
-                      task['status']?.toString() ?? 'todo';
-                  final priority =
-                      task['priority']?.toString() ?? 'medium';
-
-                  return Card(
-                    color: Colors.white,
-                    margin: const EdgeInsets.only(bottom: 10),
-                    child: ListTile(
-                      leading: Icon(
-                        status == 'completed'
-                            ? Icons.check_circle
-                            : Icons.assignment_outlined,
-                        color: status == 'completed'
-                            ? Colors.green
-                            : Colors.blue,
-                      ),
-                      title: Text(
-                        title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      subtitle: Text(
-                        '${statusText(status)} • $priority',
-                      ),
-                      trailing: const Icon(
-                        Icons.chevron_right,
-                      ),
-                      onTap: () => openDetail(task),
+            const SizedBox(height: 19),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Danh sách công việc',
+                    style: TextStyle(
+                      color: navy,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
                     ),
-                  );
-                },
-              ),
+                  ),
+                ),
+                Text(
+                  '${visibleTasks.length} mục',
+                  style: const TextStyle(
+                    color: muted,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 13),
+            if (loading)
+              const Padding(
+                padding: EdgeInsets.all(45),
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (visibleTasks.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFE5EBF5),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.inbox_outlined,
+                      color: blue,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 13),
+                    Text(
+                      query.isEmpty
+                          ? 'Chưa có công việc nào'
+                          : 'Không tìm thấy công việc',
+                      style: const TextStyle(
+                        color: navy,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 17,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Thử tìm kiếm khác hoặc tạo công việc mới.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: muted),
+                    ),
+                    const SizedBox(height: 18),
+                    FilledButton.icon(
+                      onPressed: openCreate,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Tạo công việc'),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ...visibleTasks.map(
+                    (item) => taskCard(
+                  Map<String, dynamic>.from(item as Map),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 }
+
 
 // THEM VA CHINH SUA CONG VIEC
 class TaskFormScreen extends StatefulWidget {
