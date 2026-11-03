@@ -7,8 +7,24 @@
     <list default="true" id="67b3e47c-90a6-4c0a-9219-4f4304496cf0" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TaskManager/lib/app.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/app.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/models/Task.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/models/Task.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/models/TaskShare.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/models/TaskShare.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/models/notification.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/models/notification.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/models/task.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/models/task.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/models/task_activity.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/models/task_activity.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/models/task_share.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/models/task_share.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/models/user.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/models/user.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/screens/tasks/task_create_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/screens/tasks/task_create_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/screens/tasks/task_edit_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/screens/tasks/task_edit_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/services/task_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/services/task_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/services/task_share_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/services/task_share_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/services/user_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/services/user_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/utils/constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/utils/constants.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/utils/date_formatter.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/utils/date_formatter.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/utils/validators.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/utils/validators.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/widgets/loading_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/widgets/loading_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/widgets/priority_badge.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/widgets/priority_badge.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/widgets/status_badge.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/widgets/status_badge.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/widgets/task_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/widgets/task_card.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/widgets/user_selector.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/widgets/user_selector.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
