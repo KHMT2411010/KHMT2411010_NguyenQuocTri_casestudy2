@@ -24,6 +24,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
   bool loading = true;
   String scope = 'all';
+  String? selectedStatus;
+  String? selectedPriority;
   String query = '';
   String? errorMessage;
 
@@ -59,7 +61,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
     });
 
     try {
-      final result = await _taskService.getTasks(scope: scope);
+      final result = await _taskService.getTasks(
+        scope: scope,
+        status: selectedStatus,
+        priority: selectedPriority,
+      );
 
       if (!mounted) return;
 
@@ -382,6 +388,58 @@ class _TaskListScreenState extends State<TaskListScreen> {
               loadTasks();
             },
           ),
+          const SizedBox(height: 13),
+          DropdownButtonFormField<String>(
+            key: ValueKey('status_${selectedStatus ?? 'all'}'),
+            initialValue: selectedStatus ?? 'all',
+            isExpanded: true,
+            decoration: const InputDecoration(
+              labelText: 'Trạng thái',
+              prefixIcon: Icon(Icons.timelapse_outlined),
+            ),
+            items: const [
+              DropdownMenuItem(value: 'all', child: Text('Tất cả trạng thái')),
+              DropdownMenuItem(value: 'todo', child: Text('Chưa thực hiện')),
+              DropdownMenuItem(
+                value: 'in_progress',
+                child: Text('Đang thực hiện'),
+              ),
+              DropdownMenuItem(
+                value: 'completed',
+                child: Text('Đã hoàn thành'),
+              ),
+            ],
+            onChanged: (value) {
+              if (value == null) return;
+              final next = value == 'all' ? null : value;
+              if (next == selectedStatus) return;
+              setState(() => selectedStatus = next);
+              loadTasks();
+            },
+          ),
+          const SizedBox(height: 13),
+          DropdownButtonFormField<String>(
+            key: ValueKey('priority_${selectedPriority ?? 'all'}'),
+            initialValue: selectedPriority ?? 'all',
+            isExpanded: true,
+            decoration: const InputDecoration(
+              labelText: 'Mức độ ưu tiên',
+              prefixIcon: Icon(Icons.flag_outlined),
+            ),
+            items: const [
+              DropdownMenuItem(value: 'all', child: Text('Tất cả mức độ')),
+              DropdownMenuItem(value: 'low', child: Text('Thấp')),
+              DropdownMenuItem(value: 'medium', child: Text('Trung bình')),
+              DropdownMenuItem(value: 'high', child: Text('Cao')),
+            ],
+            onChanged: (value) {
+              if (value == null) return;
+              final next = value == 'all' ? null : value;
+              if (next == selectedPriority) return;
+              setState(() => selectedPriority = next);
+              loadTasks();
+            },
+          ),
         ],
       ),
     );
@@ -564,14 +622,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         else if (errorMessage != null)
                           errorState()
                         else if (filtered.isEmpty)
-                          emptyState()
-                        else
-                          ...filtered.map(
-                            (task) => TaskCard(
-                              task: task,
-                              onTap: () => openDetail(task),
+                            emptyState()
+                          else
+                            ...filtered.map(
+                                  (task) => TaskCard(
+                                task: task,
+                                onTap: () => openDetail(task),
+                              ),
                             ),
-                          ),
                       ],
                     ),
                   ),

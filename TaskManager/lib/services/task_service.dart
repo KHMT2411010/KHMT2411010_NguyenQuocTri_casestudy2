@@ -3,14 +3,54 @@ import 'api_client.dart';
 class TaskService {
   const TaskService();
 
-  // Lấy công việc theo vai trò.
-  Future<List<Map<String, dynamic>>> getTasks({String scope = 'all'}) async {
-    final endpoint = scope == 'all'
-        ? '/api/tasks'
-        : '/api/tasks?scope=${Uri.encodeQueryComponent(scope)}';
+  // B1 + B6: Lay danh sach va loc cong viec.
+  Future<List<Map<String, dynamic>>> getTasks({
+    String scope = 'all',
+    String? status,
+    String? priority,
+  }) async {
+    const validScopes = ['all', 'created', 'assigned', 'shared'];
+
+    const validStatuses = ['todo', 'in_progress', 'completed'];
+
+    const validPriorities = ['low', 'medium', 'high'];
+
+    if (!validScopes.contains(scope)) {
+      throw ArgumentError('Bộ lọc vai trò không hợp lệ');
+    }
+
+    if (status != null && !validStatuses.contains(status)) {
+      throw ArgumentError('Trạng thái không hợp lệ');
+    }
+
+    if (priority != null && !validPriorities.contains(priority)) {
+      throw ArgumentError('Mức độ ưu tiên không hợp lệ');
+    }
+
+    final params = <String, String>{};
+
+    if (scope != 'all') {
+      params['scope'] = scope;
+    }
+
+    if (status != null) {
+      params['status'] = status;
+    }
+
+    if (priority != null) {
+      params['priority'] = priority;
+    }
+
+    final query = Uri(queryParameters: params).query;
+
+    final endpoint = query.isEmpty ? '/api/tasks' : '/api/tasks?$query';
+
+    print('B6 DEBUG API: $endpoint');
 
     final response = await ApiClient.get(endpoint);
     final data = response['data'];
+
+    print('B6 DEBUG KET QUA: ${data is List ? data.length : "khong phai danh sach"} cong viec');
 
     if (data is! List) {
       throw const FormatException('Dữ liệu danh sách công việc không hợp lệ');

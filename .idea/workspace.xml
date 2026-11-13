@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67b3e47c-90a6-4c0a-9219-4f4304496cf0" name="Changes" comment="" />
+    <list default="true" id="67b3e47c-90a6-4c0a-9219-4f4304496cf0" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/screens/tasks/task_list_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/screens/tasks/task_list_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/services/task_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/services/task_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/src/controllers/taskController.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/controllers/taskController.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

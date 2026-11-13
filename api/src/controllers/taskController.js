@@ -3,29 +3,84 @@ const mongoose = require("mongoose");
 const Task = require("../models/Task");
 const TaskShare = require("../models/TaskShare");
 
-// GET /api/tasks
+
+﻿// GET /api/tasks
 exports.getTasks = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
-    const shares = await TaskShare.find({
-      userId
-    }).select("taskId");
+    const scope = String(req.query.scope || "all").trim();
+    const status = String(req.query.status || "").trim();
+    const priority = String(req.query.priority || "").trim();
 
-    const sharedIds = shares.map(s => s.taskId);
+    const validScopes = ["all", "created", "assigned", "shared"];
+    const validStatuses = ["todo", "in_progress", "completed"];
+    const validPriorities = ["low", "medium", "high"];
 
-    const tasks = await Task.find({
-      $or: [
-        { createdBy: userId },
-        { assigneeIds: userId },
-        { _id: { $in: sharedIds } }
-      ]
-    })
+    if (!validScopes.includes(scope)) {
+      return res.status(400).json({
+        success: false,
+        message: "Bo loc cong viec khong hop le"
+      });
+    }
+
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Trang thai khong hop le"
+      });
+    }
+
+    if (priority && !validPriorities.includes(priority)) {
+      return res.status(400).json({
+        success: false,
+        message: "Muc do uu tien khong hop le"
+      });
+    }
+
+    let filter;
+
+    if (scope === "created") {
+      filter = { createdBy: userId };
+    } else if (scope === "assigned") {
+      filter = { assigneeIds: userId };
+    } else {
+      const shares = await TaskShare.find({
+        userId: userId
+      }).select("taskId");
+
+      const sharedIds = shares.map((share) => share.taskId);
+
+      if (scope === "shared") {
+        filter = { _id: { $in: sharedIds } };
+      } else {
+        filter = {
+          $or: [
+            { createdBy: userId },
+            { assigneeIds: userId },
+            { _id: { $in: sharedIds } }
+          ]
+        };
+      }
+    }
+
+    // Bo sung dieu kien loc, khong thay doi phan quyen truy cap.
+    if (status) {
+      filter.status = status;
+    }
+
+    if (priority) {
+      filter.priority = priority;
+    }
+
+    console.log("B6 BACKEND FILTER:", JSON.stringify(filter));
+    const tasks = await Task.find(filter)
       .populate("createdBy", "fullName email")
       .populate("assigneeIds", "fullName email")
+      .populate("primaryAssigneeId", "fullName email")
       .sort({ createdAt: -1 });
 
-    res.json({
+    return res.status(200).json({
       success: true,
       count: tasks.length,
       data: tasks
@@ -34,6 +89,7 @@ exports.getTasks = async (req, res, next) => {
     next(error);
   }
 };
+
 
 // POST /api/tasks
 exports.createTask = async (req, res, next) => {
