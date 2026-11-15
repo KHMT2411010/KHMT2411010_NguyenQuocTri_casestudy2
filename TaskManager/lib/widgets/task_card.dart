@@ -19,6 +19,29 @@ class TaskCard extends StatelessWidget {
 
     final status = task['status']?.toString() ?? 'todo';
     final priority = task['priority']?.toString() ?? 'medium';
+    final myRole = task['myRole']?.toString();
+
+    String? roleLabel;
+    Color roleColor = AppColors.primary;
+
+    switch (myRole) {
+      case 'owner':
+        roleLabel = 'Owner';
+        roleColor = const Color(0xFF2563EB);
+        break;
+      case 'assignee':
+        roleLabel = 'Assignee';
+        roleColor = const Color(0xFF15803D);
+        break;
+      case 'editor':
+        roleLabel = 'Editor';
+        roleColor = const Color(0xFF7C3AED);
+        break;
+      case 'viewer':
+        roleLabel = 'Viewer';
+        roleColor = const Color(0xFF64748B);
+        break;
+    }
 
     final color = TaskValues.statusColor(status);
 
@@ -109,14 +132,50 @@ class TaskCard extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 15),
+
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
                     StatusBadge(status: status),
                     PriorityBadge(priority: priority),
+
+                    if (roleLabel != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: roleColor.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: roleColor.withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.person_outline_rounded,
+                              size: 14,
+                              color: roleColor,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              roleLabel,
+                              style: TextStyle(
+                                color: roleColor,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
+
                 const SizedBox(height: 15),
                 const Divider(height: 1, color: AppColors.border),
                 const SizedBox(height: 13),

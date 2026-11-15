@@ -12,7 +12,9 @@ exports.getTasks = async (req, res, next) => {
     const scope = String(req.query.scope || "all").trim();
     const status = String(req.query.status || "").trim();
     const priority = String(req.query.priority || "").trim();
-
+    const assigneeId = String(req.query.assigneeId || "").trim();
+    const sortBy = String(req.query.sortBy || "createdAt").trim();
+    const sortOrder = String(req.query.sortOrder || "desc").trim();
     if (
       assigneeId &&
       assigneeId !== "me" &&
@@ -27,6 +29,19 @@ exports.getTasks = async (req, res, next) => {
     const validScopes = ["all", "created", "assigned", "shared"];
     const validStatuses = ["todo", "in_progress", "completed"];
     const validPriorities = ["low", "medium", "high"];
+    const validSortFields = ["createdAt", "dueDate", "priority"];
+    const validSortOrders = ["asc", "desc"];
+
+
+    if (
+    !validSortFields.includes(sortBy) ||
+    !validSortOrders.includes(sortOrder)
+    ) {
+    return res.status(400).json({
+    success: false,
+    message: "Tieu chi sap xep khong hop le"
+    });
+    }
 
     if (!validScopes.includes(scope)) {
       return res.status(400).json({
@@ -84,10 +99,23 @@ exports.getTasks = async (req, res, next) => {
       filter.priority = priority;
     }
 
-    if (assigneeId) {
-      filter.primaryAssigneeId =
-        assigneeId === "me" ? userId : assigneeId;
-    }
+
+if (assigneeId === "me") {
+  filter = {
+    $and: [
+      filter,
+      {
+        $or: [
+          { createdBy: userId },
+          { assigneeIds: userId }
+        ]
+      }
+    ]
+  };
+} else if (assigneeId) {
+  filter.assigneeIds = assigneeId;
+}
+
 
     const tasks = await Task.find(filter)
       .populate("createdBy", "fullName email")
@@ -95,11 +123,110 @@ exports.getTasks = async (req, res, next) => {
       .populate("primaryAssigneeId", "fullName email")
       .sort({ createdAt: -1 });
 
+
+    // B7: Sap xep danh sach sau khi ap dung bo loc B6.
+    const priorityRank = {
+    low: 1,
+    medium: 2,
+    high: 3
+    };
+
+    tasks.sort((a, b) => {
+    let comparison = 0;
+
+    if (sortBy === "priority") {
+    comparison =
+    (priorityRank[a.priority] ?? 0) -
+    (priorityRank[b.priority] ?? 0);
+    } else {
+    const dateA = a[sortBy] ? new Date(a[sortBy]).getTime() : null;
+    const dateB = b[sortBy] ? new Date(b[sortBy]).getTime() : null;
+
+    // Cong viec khong co ngay hop le duoc xep cuoi.
+    const validA = dateA !== null && Number.isFinite(dateA);
+    const validB = dateB !== null && Number.isFinite(dateB);
+
+    if (!validA && validB) return 1;
+    if (validA && !validB) return -1;
+
+    if (validA && validB) {
+    comparison = dateA - dateB;
+    }
+    }
+
+    if (comparison !== 0) {
+    return sortOrder === "asc" ? comparison : -comparison;
+    }
+
+    // Neu gia tri bang nhau, uu tien cong viec moi tao.
+    return (
+    new Date(b.createdAt).getTime() -
+    new Date(a.createdAt).getTime()
+    );
+    });
+
+
+    // Tim quyen chia se cua tai khoan dang dang nhap
+    // tren nhung cong viec duoc phep xem.
+    const sharesForUser = await TaskShare.find({
+      taskId: { $in: tasks.map((task) => task._id) },
+      userId: userId
+    }).select("taskId permission");
+
+    const sharePermissions = new Map();
+
+    for (const share of sharesForUser) {
+      sharePermissions.set(
+        String(share.taskId),
+        share.permission
+      );
+    }
+
+    // Xac dinh vai tro thuc te tren tung cong viec.
+    const tasksWithRole = tasks.map((task) => {
+      const taskData = task.toObject();
+
+      const creatorId = task.createdBy?._id
+        ? String(task.createdBy._id)
+        : String(task.createdBy);
+
+      const isOwner = creatorId === String(userId);
+
+      const isAssignee = (task.assigneeIds || []).some(
+        (person) => {
+          const id = person?._id ?? person;
+          return String(id) === String(userId);
+        }
+      );
+
+      const sharePermission = sharePermissions.get(
+        String(task._id)
+      );
+
+      let myRole = null;
+
+      if (isOwner) {
+        myRole = "owner";
+      } else if (isAssignee) {
+        myRole = "assignee";
+      } else if (sharePermission === "editor") {
+        myRole = "editor";
+      } else if (sharePermission === "viewer") {
+        myRole = "viewer";
+      }
+
+      return {
+        ...taskData,
+        myRole
+      };
+    });
+
     return res.status(200).json({
       success: true,
-      count: tasks.length,
-      data: tasks
+      count: tasksWithRole.length,
+      data: tasksWithRole
     });
+
   } catch (error) {
     next(error);
   }

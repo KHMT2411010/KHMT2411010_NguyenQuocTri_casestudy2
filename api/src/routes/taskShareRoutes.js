@@ -7,34 +7,38 @@ const taskShareController = require("../controllers/taskShareController");
 const authMiddleware = require("../middleware/authMiddleware");
 const permissionMiddleware = require("../middleware/permissionMiddleware");
 
-// Xac thuc nguoi dung
+// Tat ca API chia se deu yeu cau dang nhap.
 router.use(authMiddleware);
 
-// Xem danh sach nguoi duoc chia se
+// Xem danh sach nguoi duoc chia se.
+// Owner, Assignee, Editor va Viewer duoc xem.
 router.get(
   "/",
   permissionMiddleware("view"),
   taskShareController.getShares
 );
 
-// Chia se cong viec
+// Chia se cong viec.
+// Chi Owner va Assignee duoc phep.
 router.post(
   "/",
-  permissionMiddleware("owner"),
+  permissionMiddleware("manage"),
   taskShareController.createShares
 );
 
-// Cap nhat quyen viewer/editor
+// Cap nhat quyen Viewer/Editor.
+// Chi Owner va Assignee duoc phep.
 router.patch(
   "/:shareId",
-  permissionMiddleware("owner"),
+  permissionMiddleware("manage"),
   taskShareController.updateShare
 );
 
-// Thu hoi quyen chia se
+// Thu hoi quyen chia se.
+// Chi Owner va Assignee duoc phep.
 router.delete(
   "/:shareId",
-  permissionMiddleware("owner"),
+  permissionMiddleware("manage"),
   taskShareController.deleteShare
 );
 

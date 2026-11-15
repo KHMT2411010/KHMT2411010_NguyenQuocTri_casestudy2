@@ -36,10 +36,10 @@ router.patch(
   taskController.updateStatus
 );
 
-// Xóa công việc
+// Xóa công việc: người tạo hoặc người được giao
 router.delete(
   "/:id",
-  permissionMiddleware("owner"),
+  permissionMiddleware("manage"),
   taskController.deleteTask
 );
 

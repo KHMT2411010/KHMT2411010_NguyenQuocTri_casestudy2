@@ -23,6 +23,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
   Map<String, dynamic>? task;
   String? myId;
+  String? sharePermission;
   bool loading = true;
   bool changingStatus = false;
   bool deleting = false;
@@ -32,6 +33,36 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final creator = task?['createdBy'];
     final creatorId = _extractId(creator);
     return myId != null && creatorId == myId;
+  }
+
+  bool get isAssignee {
+    final assignees = task?['assigneeIds'];
+
+    if (myId == null || assignees is! List) {
+      return false;
+    }
+
+    return assignees.any((person) => _extractId(person) == myId);
+  }
+
+  bool get canManage {
+    return isOwner || isAssignee;
+  }
+
+  bool get isEditor {
+    return !canManage && sharePermission == 'editor';
+  }
+
+  bool get isViewer {
+    return !canManage && sharePermission == 'viewer';
+  }
+
+  bool get canEdit {
+    return canManage || isEditor;
+  }
+
+  bool get canChangeStatus {
+    return canManage;
   }
 
   String _extractId(dynamic value) {
@@ -86,6 +117,34 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       final me = await ApiClient.get('/api/auth/me');
       final result = await _taskService.getTaskById(widget.taskId);
 
+      final sharesResponse = await ApiClient.get(
+        '/api/tasks/${widget.taskId}/shares',
+      );
+
+      final currentUserId = _extractId(me['data']);
+
+      String? currentSharePermission;
+
+      final shares = sharesResponse['data'];
+
+      if (shares is List) {
+        for (final share in shares) {
+          if (share is! Map) continue;
+
+          final sharedUserId = _extractId(share['userId']);
+
+          if (sharedUserId == currentUserId) {
+            final permission = share['permission']?.toString();
+
+            if (permission == 'viewer' || permission == 'editor') {
+              currentSharePermission = permission;
+            }
+
+            break;
+          }
+        }
+      }
+
       if (!mounted) return;
 
       final rawUser = me['data'];
@@ -93,6 +152,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       setState(() {
         myId = _extractId(rawUser);
         task = result;
+        sharePermission = currentSharePermission;
       });
     } catch (e) {
       if (!mounted) return;
@@ -142,7 +202,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }
 
   Future<void> deleteTask() async {
-    if (!isOwner || deleting) return;
+    if (!canManage || deleting) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -532,7 +592,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                     child: Text('Đã hoàn thành'),
                                   ),
                                 ],
-                                onChanged: changingStatus
+
+                                onChanged: (changingStatus || !canChangeStatus)
                                     ? null
                                     : (value) {
                                         if (value != null && value != status) {
@@ -542,12 +603,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 20),
-                            _actionButton(
-                              icon: Icons.edit_outlined,
-                              title: 'Chỉnh sửa công việc',
-                              onPressed: editTask,
-                              primary: true,
-                            ),
+
+                            if (canEdit) ...[
+                              _actionButton(
+                                icon: Icons.edit_outlined,
+                                title: 'Chỉnh sửa công việc',
+                                onPressed: editTask,
+                                primary: true,
+                              ),
+                            ],
+
                             if (isOwner) ...[
                               const SizedBox(height: 11),
                               _actionButton(
@@ -555,6 +620,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                 title: 'Giao công việc',
                                 onPressed: openAssignment,
                               ),
+                            ],
+
+                            if (canManage) ...[
                               const SizedBox(height: 11),
                               _actionButton(
                                 icon: Icons.share_outlined,
@@ -565,14 +633,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                               TextButton.icon(
                                 onPressed: deleting ? null : deleteTask,
                                 icon: const Icon(
-                                  Icons.delete_outline,
+                                  Icons.delete_outline_rounded,
                                   color: AppColors.danger,
                                 ),
-                                label: Text(
-                                  deleting ? 'Đang xóa...' : 'Xóa công việc',
-                                  style: const TextStyle(
-                                    color: AppColors.danger,
-                                  ),
+                                label: const Text(
+                                  'Xóa công việc',
+                                  style: TextStyle(color: AppColors.danger),
                                 ),
                               ),
                             ],

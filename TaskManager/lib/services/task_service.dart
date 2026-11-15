@@ -9,10 +9,23 @@ class TaskService {
     String? status,
     String? priority,
     String? assigneeId,
+    String sortBy = 'createdAt',
+    String sortOrder = 'desc',
   }) async {
     const validScopes = ['all', 'created', 'assigned', 'shared'];
     const validStatuses = ['todo', 'in_progress', 'completed'];
     const validPriorities = ['low', 'medium', 'high'];
+    const validSortFields = ['createdAt', 'dueDate', 'priority'];
+    const validSortOrders = ['asc', 'desc'];
+
+
+    if (!validSortFields.contains(sortBy)) {
+      throw ArgumentError('Tiêu chí sắp xếp không hợp lệ');
+    }
+
+    if (!validSortOrders.contains(sortOrder)) {
+      throw ArgumentError('Thứ tự sắp xếp không hợp lệ');
+    }
 
     if (!validScopes.contains(scope)) {
       throw ArgumentError('Bộ lọc vai trò không hợp lệ');
@@ -48,12 +61,19 @@ class TaskService {
       params['assigneeId'] = assigneeId;
     }
 
+    params['sortBy'] = sortBy;
+    params['sortOrder'] = sortOrder;
+
     final query = Uri(queryParameters: params).query;
 
     final endpoint = query.isEmpty ? '/api/tasks' : '/api/tasks?$query';
 
     final response = await ApiClient.get(endpoint);
     final data = response['data'];
+    if (data is List && data.isNotEmpty) {
+      final firstTask = data.first;
+      ;
+    }
 
     if (data is! List) {
       throw const FormatException('Dữ liệu danh sách công việc không hợp lệ');

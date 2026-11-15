@@ -28,26 +28,60 @@ const permissionMiddleware = (requiredPermission) => {
       const isOwner =
         String(task.createdBy) === String(userId);
 
-      const isAssignee = task.assigneeIds.some(
-        id => String(id) === String(userId)
-      );
+      const isAssignee =
+        Array.isArray(task.assigneeIds) &&
+        task.assigneeIds.some(
+          (id) => String(id) === String(userId)
+        );
 
-      const share = await TaskShare.findOne({
-        taskId,
-        userId
-      });
+      let share = null;
+
+      if (!isOwner && !isAssignee) {
+        share = await TaskShare.findOne({
+          taskId: task._id,
+          userId
+        });
+      }
+
+      const isEditor = share?.permission === "editor";
+      const isViewer = share?.permission === "viewer";
 
       let allowed = false;
 
-      if (isOwner) {
-        allowed = true;
-      } else if (requiredPermission === "view") {
-        allowed = isAssignee || Boolean(share);
-      } else if (requiredPermission === "edit") {
-        allowed = share?.permission === "editor";
-      } else if (requiredPermission === "status") {
-        allowed = isAssignee ||
-          share?.permission === "editor";
+      switch (requiredPermission) {
+        case "view":
+          allowed =
+            isOwner ||
+            isAssignee ||
+            isEditor ||
+            isViewer;
+          break;
+
+        case "edit":
+          allowed =
+            isOwner ||
+            isAssignee ||
+            isEditor;
+          break;
+
+        case "status":
+          allowed =
+            isOwner ||
+            isAssignee;
+          break;
+
+        case "manage":
+          allowed =
+            isOwner ||
+            isAssignee;
+          break;
+
+        case "owner":
+          allowed = isOwner;
+          break;
+
+        default:
+          allowed = false;
       }
 
       if (!allowed) {
@@ -58,6 +92,15 @@ const permissionMiddleware = (requiredPermission) => {
       }
 
       req.task = task;
+
+      req.taskRole = isOwner
+        ? "owner"
+        : isAssignee
+          ? "assignee"
+          : isEditor
+            ? "editor"
+            : "viewer";
+
       next();
     } catch (error) {
       next(error);

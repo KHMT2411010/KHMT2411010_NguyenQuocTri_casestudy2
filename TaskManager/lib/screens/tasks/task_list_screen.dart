@@ -17,6 +17,68 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
+  // B7 - Sap xep danh sach cong viec.
+  String selectedSortBy = 'createdAt';
+  String selectedSortOrder = 'desc';
+
+  Future<void> loadAssigneeOptions() async {
+    try {
+      // Lay tat ca cong viec ma tai khoan co quyen xem.
+      // Khong phu thuoc bo loc trang thai, uu tien hien tai.
+      final allTasks = await _taskService.getTasks(scope: 'all');
+
+      // Lay ID cua tai khoan dang dang nhap.
+      final meResponse = await ApiClient.get('/api/auth/me');
+      final meData = meResponse['data'];
+
+      final String? currentUserId = meData is Map
+          ? (meData['_id'] ?? meData['id'])?.toString()
+          : null;
+
+      final users = <String, String>{};
+
+      for (final task in allTasks) {
+        final assignees = task['assigneeIds'];
+
+        if (assignees is! List) continue;
+
+        for (final item in assignees) {
+          if (item is! Map) continue;
+
+          final id = (item['_id'] ?? item['id'])?.toString().trim();
+
+          final name = item['fullName']?.toString().trim();
+
+          if (id == null || id.isEmpty) continue;
+          if (name == null || name.isEmpty) continue;
+
+          // Khong hien lai tai khoan hien tai vi da co "Toi phu trach".
+          if (id == currentUserId) continue;
+
+          users[id] = name;
+        }
+      }
+
+      final options = users.entries.map((entry) {
+        return <String, String>{'id': entry.key, 'name': entry.value};
+      }).toList();
+
+      options.sort(
+        (a, b) => (a['name'] ?? '').toLowerCase().compareTo(
+          (b['name'] ?? '').toLowerCase(),
+        ),
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        assigneeOptions = options;
+      });
+    } catch (error) {
+      debugPrint('Khong tai duoc nguoi phu trach: $error');
+    }
+  }
+
   final TaskService _taskService = const TaskService();
   final TextEditingController searchController = TextEditingController();
 
@@ -26,12 +88,15 @@ class _TaskListScreenState extends State<TaskListScreen> {
   String scope = 'all';
   String? selectedStatus;
   String? selectedPriority;
+  String? selectedAssignee;
+  List<Map<String, String>> assigneeOptions = [];
   String query = '';
   String? errorMessage;
 
   @override
   void initState() {
     super.initState();
+    loadAssigneeOptions();
     loadTasks();
   }
 
@@ -65,7 +130,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
         scope: scope,
         status: selectedStatus,
         priority: selectedPriority,
+        assigneeId: selectedAssignee,
+        sortBy: selectedSortBy,
+        sortOrder: selectedSortOrder,
       );
+
 
       if (!mounted) return;
 
@@ -145,8 +214,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
       context,
       MaterialPageRoute(builder: (_) => TaskDetailScreen(taskId: id)),
     );
-
-    if (mounted) await loadTasks();
+    if (mounted) {
+      await loadAssigneeOptions();
+      await loadTasks();
+    }
   }
 
   Future<void> openProfile() async {
@@ -340,6 +411,150 @@ class _TaskListScreenState extends State<TaskListScreen> {
   }
 
   Widget filters() {
+    final filterFields = <Widget>[
+      DropdownButtonFormField<String>(
+        key: ValueKey(scope),
+        initialValue: scope,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Hiển thị theo',
+          prefixIcon: Icon(Icons.filter_list_rounded),
+        ),
+        items: const [
+          DropdownMenuItem(value: 'all', child: Text('Tất cả công việc')),
+          DropdownMenuItem(value: 'created', child: Text('Công việc tôi tạo')),
+          DropdownMenuItem(value: 'assigned', child: Text('Được giao cho tôi')),
+          DropdownMenuItem(value: 'shared', child: Text('Được chia sẻ')),
+        ],
+        onChanged: (value) {
+          if (value == null || value == scope) return;
+          setState(() => scope = value);
+          loadTasks();
+        },
+      ),
+
+      DropdownButtonFormField<String>(
+        key: ValueKey('status_${selectedStatus ?? 'all'}'),
+        initialValue: selectedStatus ?? 'all',
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Trạng thái',
+          prefixIcon: Icon(Icons.timelapse_outlined),
+        ),
+        items: const [
+          DropdownMenuItem(value: 'all', child: Text('Tất cả trạng thái')),
+          DropdownMenuItem(value: 'todo', child: Text('Chưa thực hiện')),
+          DropdownMenuItem(value: 'in_progress', child: Text('Đang thực hiện')),
+          DropdownMenuItem(value: 'completed', child: Text('Đã hoàn thành')),
+        ],
+        onChanged: (value) {
+          if (value == null) return;
+          final next = value == 'all' ? null : value;
+          if (next == selectedStatus) return;
+          setState(() => selectedStatus = next);
+          loadTasks();
+        },
+      ),
+
+      DropdownButtonFormField<String>(
+        key: ValueKey('priority_${selectedPriority ?? 'all'}'),
+        initialValue: selectedPriority ?? 'all',
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Mức độ ưu tiên',
+          prefixIcon: Icon(Icons.flag_outlined),
+        ),
+        items: const [
+          DropdownMenuItem(value: 'all', child: Text('Tất cả mức độ')),
+          DropdownMenuItem(value: 'low', child: Text('Thấp')),
+          DropdownMenuItem(value: 'medium', child: Text('Trung bình')),
+          DropdownMenuItem(value: 'high', child: Text('Cao')),
+        ],
+        onChanged: (value) {
+          if (value == null) return;
+          final next = value == 'all' ? null : value;
+          if (next == selectedPriority) return;
+          setState(() => selectedPriority = next);
+          loadTasks();
+        },
+      ),
+
+      DropdownButtonFormField<String>(
+        key: ValueKey('assignee_${selectedAssignee ?? 'all'}'),
+        initialValue: selectedAssignee ?? 'all',
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Người được giao phụ trách',
+          prefixIcon: Icon(Icons.people_outline),
+        ),
+        items: [
+          const DropdownMenuItem<String>(
+            value: 'all',
+            child: Text('Tất cả người phụ trách'),
+          ),
+          const DropdownMenuItem<String>(
+            value: 'me',
+            child: Text('Tôi phụ trách'),
+          ),
+          ...assigneeOptions.map((user) {
+            return DropdownMenuItem<String>(
+              value: user['id']!,
+              child: Text(
+                '${user['name']} phụ trách',
+                overflow: TextOverflow.ellipsis,
+              ),
+            );
+          }),
+        ],
+        onChanged: (value) {
+          if (value == null) return;
+          final next = value == 'all' ? null : value;
+          if (next == selectedAssignee) return;
+          setState(() => selectedAssignee = next);
+          loadTasks();
+        },
+      ),
+
+      DropdownButtonFormField<String>(
+        key: ValueKey('sortBy_$selectedSortBy'),
+        initialValue: selectedSortBy,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Sắp xếp theo',
+          prefixIcon: Icon(Icons.sort_rounded),
+        ),
+        items: const [
+          DropdownMenuItem(value: 'createdAt', child: Text('Thời gian tạo')),
+          DropdownMenuItem(value: 'dueDate', child: Text('Hạn hoàn thành')),
+          DropdownMenuItem(value: 'priority', child: Text('Mức độ ưu tiên')),
+        ],
+        onChanged: (value) {
+          if (value == null || value == selectedSortBy) return;
+          setState(() => selectedSortBy = value);
+          loadTasks();
+        },
+      ),
+
+      DropdownButtonFormField<String>(
+        key: ValueKey('sortOrder_$selectedSortOrder'),
+        initialValue: selectedSortOrder,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Thứ tự sắp xếp',
+          prefixIcon: Icon(Icons.swap_vert_rounded),
+        ),
+        items: const [
+          DropdownMenuItem(value: 'desc', child: Text('Giảm dần')),
+          DropdownMenuItem(value: 'asc', child: Text('Tăng dần')),
+        ],
+        onChanged: (value) {
+          if (value == null || value == selectedSortOrder) return;
+          setState(() => selectedSortOrder = value);
+          loadTasks();
+        },
+      ),
+    ];
+
     return Container(
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
@@ -360,84 +575,39 @@ class _TaskListScreenState extends State<TaskListScreen> {
               prefixIcon: Icon(Icons.search_rounded),
             ),
           ),
-          const SizedBox(height: 13),
-          DropdownButtonFormField<String>(
-            key: ValueKey(scope),
-            initialValue: scope,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Hiển thị theo',
-              prefixIcon: Icon(Icons.filter_list_rounded),
-            ),
-            items: const [
-              DropdownMenuItem(value: 'all', child: Text('Tất cả công việc')),
-              DropdownMenuItem(
-                value: 'created',
-                child: Text('Công việc tôi tạo'),
-              ),
-              DropdownMenuItem(
-                value: 'assigned',
-                child: Text('Được giao cho tôi'),
-              ),
-              DropdownMenuItem(value: 'shared', child: Text('Được chia sẻ')),
-            ],
-            onChanged: (value) {
-              if (value == null || value == scope) return;
+          const SizedBox(height: 14),
 
-              setState(() => scope = value);
-              loadTasks();
-            },
-          ),
-          const SizedBox(height: 13),
-          DropdownButtonFormField<String>(
-            key: ValueKey('status_${selectedStatus ?? 'all'}'),
-            initialValue: selectedStatus ?? 'all',
-            isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Trạng thái',
-              prefixIcon: Icon(Icons.timelapse_outlined),
-            ),
-            items: const [
-              DropdownMenuItem(value: 'all', child: Text('Tất cả trạng thái')),
-              DropdownMenuItem(value: 'todo', child: Text('Chưa thực hiện')),
-              DropdownMenuItem(
-                value: 'in_progress',
-                child: Text('Đang thực hiện'),
-              ),
-              DropdownMenuItem(
-                value: 'completed',
-                child: Text('Đã hoàn thành'),
-              ),
-            ],
-            onChanged: (value) {
-              if (value == null) return;
-              final next = value == 'all' ? null : value;
-              if (next == selectedStatus) return;
-              setState(() => selectedStatus = next);
-              loadTasks();
-            },
-          ),
-          const SizedBox(height: 13),
-          DropdownButtonFormField<String>(
-            key: ValueKey('priority_${selectedPriority ?? 'all'}'),
-            initialValue: selectedPriority ?? 'all',
-            isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Mức độ ưu tiên',
-              prefixIcon: Icon(Icons.flag_outlined),
-            ),
-            items: const [
-              DropdownMenuItem(value: 'all', child: Text('Tất cả mức độ')),
-              DropdownMenuItem(value: 'low', child: Text('Thấp')),
-              DropdownMenuItem(value: 'medium', child: Text('Trung bình')),
-              DropdownMenuItem(value: 'high', child: Text('Cao')),
-            ],
-            onChanged: (value) {
-              if (value == null) return;
-              final next = value == 'all' ? null : value;
-              if (next == selectedPriority) return;
-              setState(() => selectedPriority = next);
-              loadTasks();
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final useTwoColumns = constraints.maxWidth >= 620;
+
+              if (!useTwoColumns) {
+                return Column(
+                  children: [
+                    for (var i = 0; i < filterFields.length; i++) ...[
+                      filterFields[i],
+                      if (i < filterFields.length - 1)
+                        const SizedBox(height: 13),
+                    ],
+                  ],
+                );
+              }
+
+              return Column(
+                children: [
+                  for (var i = 0; i < filterFields.length; i += 2) ...[
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: filterFields[i]),
+                        const SizedBox(width: 13),
+                        Expanded(child: filterFields[i + 1]),
+                      ],
+                    ),
+                    if (i < filterFields.length - 2) const SizedBox(height: 13),
+                  ],
+                ],
+              );
             },
           ),
         ],
@@ -622,14 +792,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         else if (errorMessage != null)
                           errorState()
                         else if (filtered.isEmpty)
-                            emptyState()
-                          else
-                            ...filtered.map(
-                                  (task) => TaskCard(
-                                task: task,
-                                onTap: () => openDetail(task),
-                              ),
+                          emptyState()
+                        else
+                          ...filtered.map(
+                            (task) => TaskCard(
+                              task: task,
+                              onTap: () => openDetail(task),
                             ),
+                          ),
                       ],
                     ),
                   ),
