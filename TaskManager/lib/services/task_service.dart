@@ -3,16 +3,15 @@ import 'api_client.dart';
 class TaskService {
   const TaskService();
 
-  // B1 + B6: Lay danh sach va loc cong viec.
+  // B1 + B6: Lay va loc danh sach cong viec.
   Future<List<Map<String, dynamic>>> getTasks({
     String scope = 'all',
     String? status,
     String? priority,
+    String? assigneeId,
   }) async {
     const validScopes = ['all', 'created', 'assigned', 'shared'];
-
     const validStatuses = ['todo', 'in_progress', 'completed'];
-
     const validPriorities = ['low', 'medium', 'high'];
 
     if (!validScopes.contains(scope)) {
@@ -25,6 +24,10 @@ class TaskService {
 
     if (priority != null && !validPriorities.contains(priority)) {
       throw ArgumentError('Mức độ ưu tiên không hợp lệ');
+    }
+
+    if (assigneeId != null && assigneeId.trim().isEmpty) {
+      throw ArgumentError('Người phụ trách không hợp lệ');
     }
 
     final params = <String, String>{};
@@ -41,16 +44,16 @@ class TaskService {
       params['priority'] = priority;
     }
 
+    if (assigneeId != null) {
+      params['assigneeId'] = assigneeId;
+    }
+
     final query = Uri(queryParameters: params).query;
 
     final endpoint = query.isEmpty ? '/api/tasks' : '/api/tasks?$query';
 
-    print('B6 DEBUG API: $endpoint');
-
     final response = await ApiClient.get(endpoint);
     final data = response['data'];
-
-    print('B6 DEBUG KET QUA: ${data is List ? data.length : "khong phai danh sach"} cong viec');
 
     if (data is! List) {
       throw const FormatException('Dữ liệu danh sách công việc không hợp lệ');

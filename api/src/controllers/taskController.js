@@ -13,6 +13,17 @@ exports.getTasks = async (req, res, next) => {
     const status = String(req.query.status || "").trim();
     const priority = String(req.query.priority || "").trim();
 
+    if (
+      assigneeId &&
+      assigneeId !== "me" &&
+      !mongoose.isValidObjectId(assigneeId)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Nguoi phu trach khong hop le"
+      });
+    }
+
     const validScopes = ["all", "created", "assigned", "shared"];
     const validStatuses = ["todo", "in_progress", "completed"];
     const validPriorities = ["low", "medium", "high"];
@@ -73,7 +84,11 @@ exports.getTasks = async (req, res, next) => {
       filter.priority = priority;
     }
 
-    console.log("B6 BACKEND FILTER:", JSON.stringify(filter));
+    if (assigneeId) {
+      filter.primaryAssigneeId =
+        assigneeId === "me" ? userId : assigneeId;
+    }
+
     const tasks = await Task.find(filter)
       .populate("createdBy", "fullName email")
       .populate("assigneeIds", "fullName email")
