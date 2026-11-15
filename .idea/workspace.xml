@@ -6,14 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="67b3e47c-90a6-4c0a-9219-4f4304496cf0" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/lib/screens/tasks/task_detail_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/screens/tasks/task_detail_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/analysis_options.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/analysis_options.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TaskManager/lib/screens/tasks/task_list_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/screens/tasks/task_list_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TaskManager/lib/services/statistics_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/services/statistics_service.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TaskManager/lib/services/task_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/services/task_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskManager/lib/widgets/task_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/TaskManager/lib/widgets/task_card.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/controllers/taskController.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/controllers/taskController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/middleware/permissionMiddleware.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/middleware/permissionMiddleware.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/routes/taskRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/routes/taskRoutes.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/src/routes/taskShareRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/routes/taskShareRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/src/controllers/taskController.before_B1_20261113_213910.bak" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,6 +29,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/TaskManager/analysis_options.yaml" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 8,

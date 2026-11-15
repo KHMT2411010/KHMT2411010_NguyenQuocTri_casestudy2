@@ -31,8 +31,7 @@ class TaskStatistics {
 class StatisticsService {
   final TaskService _taskService;
 
-  const StatisticsService({TaskService taskService = const TaskService()})
-    : _taskService = taskService;
+  const StatisticsService({this._taskService = const TaskService()});
 
   TaskStatistics calculate(List<Map<String, dynamic>> tasks) {
     int pending = 0;

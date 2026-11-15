@@ -20,6 +20,28 @@ class _TaskListScreenState extends State<TaskListScreen> {
   // B7 - Sap xep danh sach cong viec.
   String selectedSortBy = 'createdAt';
   String selectedSortOrder = 'desc';
+  String currentUserName = 'Tài khoản';
+
+  Future<void> loadCurrentUser() async {
+    try {
+      final response = await ApiClient.get('/api/auth/me');
+      final user = response['data'];
+
+      if (user is! Map) return;
+
+      final name = (user['fullName'] ?? user['name'] ?? 'Tài khoản')
+          .toString()
+          .trim();
+
+      if (!mounted) return;
+
+      setState(() {
+        currentUserName = name.isEmpty ? 'Tài khoản' : name;
+      });
+    } catch (error) {
+      debugPrint('Khong tai duoc ten tai khoan: $error');
+    }
+  }
 
   Future<void> loadAssigneeOptions() async {
     try {
@@ -30,6 +52,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
       // Lay ID cua tai khoan dang dang nhap.
       final meResponse = await ApiClient.get('/api/auth/me');
       final meData = meResponse['data'];
+      final String loadedUserName = meData is Map
+          ? (meData['fullName'] ?? meData['name'] ?? 'Tài khoản')
+                .toString()
+                .trim()
+          : 'Tài khoản';
 
       final String? currentUserId = meData is Map
           ? (meData['_id'] ?? meData['id'])?.toString()
@@ -96,6 +123,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
   @override
   void initState() {
     super.initState();
+    loadCurrentUser();
     loadAssigneeOptions();
     loadTasks();
   }
@@ -134,7 +162,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
         sortBy: selectedSortBy,
         sortOrder: selectedSortOrder,
       );
-
 
       if (!mounted) return;
 
@@ -689,31 +716,87 @@ class _TaskListScreenState extends State<TaskListScreen> {
   @override
   Widget build(BuildContext context) {
     final filtered = visibleTasks;
+    final narrowHeader = MediaQuery.sizeOf(context).width < 650;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: AppColors.navy,
-        title: const Text(
+        titleSpacing: 12,
+
+
+        title: narrowHeader
+            ? TextButton.icon(
+          onPressed: openProfile,
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+          ),
+          icon: const Icon(
+            Icons.account_circle_rounded,
+            color: AppColors.primary,
+            size: 25,
+          ),
+          label: Text(
+            currentUserName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF173A70),
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        )
+            : const Text(
           'TaskFlow',
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
+
         actions: [
           IconButton(
             tooltip: 'Làm mới',
             onPressed: loading ? null : loadTasks,
             icon: const Icon(Icons.refresh_rounded),
           ),
-          IconButton(
-            tooltip: 'Thông tin cá nhân',
-            onPressed: openProfile,
-            icon: const Icon(Icons.account_circle_outlined),
-          ),
-          IconButton(
-            tooltip: 'Đăng xuất',
-            onPressed: logout,
-            icon: const Icon(Icons.logout_rounded),
+
+          if (!narrowHeader)
+            TextButton.icon(
+              onPressed: openProfile,
+              icon: const Icon(
+                Icons.account_circle_rounded,
+                color: AppColors.primary,
+                size: 24,
+              ),
+              label: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 180),
+                child: Text(
+                  currentUserName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF173A70),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+
+          Padding(
+            padding: const EdgeInsets.only(right: 12, left: 6),
+            child: IconButton(
+              tooltip: 'Đăng xuất',
+              onPressed: logout,
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFFFEE2E2),
+                foregroundColor: const Color(0xFFDC2626),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: const Icon(Icons.logout_rounded),
+            ),
           ),
         ],
       ),
@@ -724,7 +807,20 @@ class _TaskListScreenState extends State<TaskListScreen> {
         icon: const Icon(Icons.add_rounded),
         label: const Text('Tạo công việc'),
       ),
-      body: RefreshIndicator(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFE5F1FF),
+                Color(0xFFF2F8FF),
+                Colors.white,
+              ],
+              stops: [0.0, 0.48, 1.0],
+            ),
+          ),
+          child: RefreshIndicator(
         onRefresh: loadTasks,
         child: LayoutBuilder(
           builder: (context, viewport) {
@@ -809,6 +905,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
           },
         ),
       ),
+    ),
     );
   }
 }

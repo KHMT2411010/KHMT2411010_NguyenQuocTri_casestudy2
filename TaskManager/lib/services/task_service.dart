@@ -70,10 +70,6 @@ class TaskService {
 
     final response = await ApiClient.get(endpoint);
     final data = response['data'];
-    if (data is List && data.isNotEmpty) {
-      final firstTask = data.first;
-      ;
-    }
 
     if (data is! List) {
       throw const FormatException('Dữ liệu danh sách công việc không hợp lệ');
