@@ -8,6 +8,7 @@ import '../../utils/constants.dart';
 import '../../widgets/task_card.dart';
 import '../../widgets/loading_view.dart';
 import '../profile/profile_screen.dart';
+import '../statistics/statistics_screen.dart';
 import 'task_create_screen.dart';
 import 'task_detail_screen.dart';
 
@@ -876,6 +877,22 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           dashboardHeader(),
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const StatisticsScreen(),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.bar_chart_rounded),
+                              label: const Text('Th\u1ed1ng k\u00ea'),
+                            ),
+                          ),
                           const SizedBox(height: 25),
                           const Text(
                             'Công việc của bạn',

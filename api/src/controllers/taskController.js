@@ -4,6 +4,7 @@ const TaskShare = require("../models/TaskShare"); // GET /api/tasks
 const User = require("../models/User");
 const { sendEmail } = require("../services/emailService");
 const { createNotification } = require("../services/notificationService");
+const { createTaskActivity } = require("../services/taskService");
 
 exports.getTasks = async (req, res, next) => {
   try {
@@ -235,6 +236,22 @@ exports.createTask = async (req, res, next) => {
       createdBy: req.user.id,
       assigneeIds: [],
     });
+    // E4: Record successful task creation.
+    // Activity logging failure must not block task creation.
+    const activityResult = await createTaskActivity({
+      taskId: task._id,
+      userId: req.user.id,
+      action: "task_created",
+      description: "Da tao cong viec: " + task.title,
+    });
+
+    if (!activityResult.success) {
+      console.error(
+        "[E4] Could not record task_created:",
+        activityResult.error
+      );
+    }
+
 
     res.status(201).json({
       success: true,
@@ -368,6 +385,22 @@ exports.updateTask = async (req, res, next) => {
 
     // D3: Chi gui email neu co thay doi thuc su.
     if (changedFields.length > 0) {
+      // E4: Record task field changes.
+      const activityResult = await createTaskActivity({
+        taskId: task._id,
+        userId: req.user.id,
+        action: "task_updated",
+        description:
+          "Da cap nhat: " +
+          changedFields.map((field) => field.label).join(", "),
+      });
+
+      if (!activityResult.success) {
+        console.error(
+          "[E4] Could not record task_updated:",
+          activityResult.error
+        );
+      }
       try {
         // Tim nguoi duoc chia se cong viec.
         const shares = await TaskShare.find({
@@ -518,6 +551,31 @@ exports.updateStatus = async (req, res, next) => {
       });
     }
 
+    // E4: Record task status changes.
+    const statusChanged =
+      status === "completed"
+        ? Boolean(completedTransition)
+        : String(req.task.status) !== status;
+
+    if (statusChanged) {
+      const activityResult = await createTaskActivity({
+        taskId: task._id,
+        userId: req.user.id,
+        action: "task_status_changed",
+        description:
+          "Da doi trang thai: " +
+          String(req.task.status) +
+          " -> " +
+          status,
+      });
+
+      if (!activityResult.success) {
+        console.error(
+          "[E4] Could not record task_status_changed:",
+          activityResult.error
+        );
+      }
+    }
     if (shouldNotify) {
       try {
         const shares = await TaskShare.find({

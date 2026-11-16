@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const taskController = require("../controllers/taskController");
+const taskActivityController = require("../controllers/taskActivityController");
 const authMiddleware = require("../middleware/authMiddleware");
 const permissionMiddleware = require("../middleware/permissionMiddleware");
 
@@ -13,6 +14,13 @@ router.get("/", taskController.getTasks);
 
 // Tạo công việc
 router.post("/", taskController.createTask);
+
+// Xem lịch sử hoạt động của công việc (yêu cầu quyền xem)
+router.get(
+  "/:id/activities",
+  permissionMiddleware("view"),
+  taskActivityController.getTaskActivities,
+);
 
 // Xem chi tiết công việc
 router.get("/:id", permissionMiddleware("view"), taskController.getTaskById);

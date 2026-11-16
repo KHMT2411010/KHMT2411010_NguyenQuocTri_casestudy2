@@ -27,6 +27,7 @@ class _SharingScreenState extends State<SharingScreen> {
   String? searchMessage;
 
   bool loading = true;
+  String? sharesLoadError;
   bool searching = false;
   bool saving = false;
   bool processing = false;
@@ -77,19 +78,30 @@ class _SharingScreenState extends State<SharingScreen> {
   Future<void> loadShares() async {
     if (!mounted) return;
 
-    setState(() => loading = true);
+    setState(() {
+      loading = true;
+      sharesLoadError = null;
+    });
 
     try {
       final result = await _shareService.getShares(widget.taskId);
 
       if (!mounted) return;
 
-      setState(() => shares = result);
+      setState(() {
+        shares = result;
+        sharesLoadError = null;
+      });
     } catch (error) {
-      showMessage(
-        error.toString().replaceFirst('Exception: ', ''),
-        error: true,
-      );
+      if (!mounted) return;
+
+      final message = error.toString().replaceFirst('Exception: ', '');
+
+      setState(() {
+        sharesLoadError = message;
+      });
+
+      showMessage(message, error: true);
     } finally {
       if (mounted) {
         setState(() => loading = false);
@@ -138,6 +150,17 @@ class _SharingScreenState extends State<SharingScreen> {
 
   Future<void> addShare() async {
     if (saving || foundUser == null) return;
+
+    final enteredEmail = emailController.text.trim().toLowerCase();
+    final selectedEmail = userEmail(foundUser!).trim().toLowerCase();
+
+    if (enteredEmail != selectedEmail) {
+      showMessage(
+        'Email đã thay đổi. Vui lòng tìm lại tài khoản trước khi chia sẻ.',
+        error: true,
+      );
+      return;
+    }
 
     final id = userId(foundUser!);
 
@@ -758,6 +781,24 @@ class _SharingScreenState extends State<SharingScreen> {
                                 child: Center(
                                   child: CircularProgressIndicator(),
                                 ),
+                              )
+                            else if (sharesLoadError != null)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Không thể tải danh sách chia sẻ: $sharesLoadError',
+                                    style: const TextStyle(
+                                      color: AppColors.danger,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  OutlinedButton.icon(
+                                    onPressed: loadShares,
+                                    icon: const Icon(Icons.refresh_rounded),
+                                    label: const Text('Thử lại'),
+                                  ),
+                                ],
                               )
                             else if (shares.isEmpty)
                               const Padding(

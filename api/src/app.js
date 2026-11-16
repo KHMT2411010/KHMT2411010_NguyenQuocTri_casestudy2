@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const cors = require("cors");
 
 const User = require("./models/User");
@@ -42,31 +42,33 @@ app.use("/api/notifications", require("./routes/notificationRoutes"));
 // API tim nguoi dung bang email - yeu cau JWT
 app.get("/api/users/search", authMiddleware, async (req, res) => {
   try {
-    const email = String(req.query.q || "")
-      .trim()
-      .toLowerCase();
+    const keyword = String(req.query.q || "").trim();
 
-    // Kiem tra email
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (keyword.length < 2 || keyword.length > 100) {
       return res.status(400).json({
         success: false,
-        message: "Email khong hop le",
+        message: "Nhap tu 2 den 100 ky tu de tim kiem",
       });
     }
 
-    // Escape ky tu dac biet cua RegExp
-    const escapedEmail = email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // Escape special RegExp characters before searching.
+    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(escaped, "i");
 
-    // Tim email chinh xac, khong phan biet hoa thuong
-    const user = await User.findOne({
-      email: new RegExp(`^${escapedEmail}$`, "i"),
+    const users = await User.find({
+      $or: [
+        { email: pattern },
+        { fullName: pattern },
+      ],
     })
       .select("_id fullName email")
+      .sort({ fullName: 1, email: 1 })
+      .limit(10)
       .lean();
 
     return res.status(200).json({
       success: true,
-      data: user ? [user] : [],
+      data: users,
     });
   } catch (error) {
     console.error("Search user error:", error);
@@ -77,7 +79,6 @@ app.get("/api/users/search", authMiddleware, async (req, res) => {
     });
   }
 });
-
 // API khong ton tai
 app.use((req, res) => {
   res.status(404).json({

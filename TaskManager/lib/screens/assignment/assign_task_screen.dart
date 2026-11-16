@@ -21,13 +21,67 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
   final emailController = TextEditingController();
 
   final List<Map<String, dynamic>> selectedUsers = [];
+  final Set<String> initialAssignedIds = {};
 
   Map<String, dynamic>? foundUser;
   String? primaryId;
   String? searchMessage;
 
+  bool loadingAssignees = true;
+  String? assigneesLoadError;
+
   bool searching = false;
   bool saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    loadExistingAssignees();
+  }
+
+  Future<void> loadExistingAssignees() async {
+    try {
+      final assignees = await _taskService.getAssignees(widget.taskId);
+      final task = await _taskService.getTaskById(widget.taskId);
+
+      if (!mounted) return;
+
+      final primary = task['primaryAssigneeId'];
+
+      String? loadedPrimaryId;
+
+      if (primary is Map) {
+        loadedPrimaryId = (primary['_id'] ?? primary['id'])?.toString();
+      } else if (primary != null) {
+        loadedPrimaryId = primary.toString();
+      }
+
+      setState(() {
+        initialAssignedIds
+          ..clear()
+          ..addAll(assignees.map(userId));
+
+        selectedUsers
+          ..clear()
+          ..addAll(assignees);
+
+        primaryId = assignees.any((user) => userId(user) == loadedPrimaryId)
+            ? loadedPrimaryId
+            : null;
+
+        loadingAssignees = false;
+        assigneesLoadError = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        loadingAssignees = false;
+        assigneesLoadError =
+            'Không thể tải danh sách người được phân công: $error';
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -157,6 +211,8 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       return;
     }
 
+    final removedIds = initialAssignedIds.difference(ids.toSet()).toList();
+
     setState(() => saving = true);
 
     try {
@@ -165,6 +221,10 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
         userIds: ids,
         primaryAssigneeId: primaryId!,
       );
+
+      for (final removedId in removedIds) {
+        await _taskService.removeAssignee(widget.taskId, removedId);
+      }
 
       if (!mounted) return;
 
@@ -548,7 +608,33 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            if (selectedUsers.isEmpty)
+                            if (loadingAssignees)
+                              const Center(child: CircularProgressIndicator())
+                            else if (assigneesLoadError != null)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    assigneesLoadError!,
+                                    style: const TextStyle(
+                                      color: AppColors.danger,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  OutlinedButton.icon(
+                                    onPressed: () {
+                                      setState(() {
+                                        loadingAssignees = true;
+                                        assigneesLoadError = null;
+                                      });
+                                      loadExistingAssignees();
+                                    },
+                                    icon: const Icon(Icons.refresh_rounded),
+                                    label: const Text('Thử lại'),
+                                  ),
+                                ],
+                              )
+                            else if (selectedUsers.isEmpty)
                               Container(
                                 padding: const EdgeInsets.all(23),
                                 decoration: BoxDecoration(
@@ -580,7 +666,12 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                       SizedBox(
                         height: 54,
                         child: FilledButton.icon(
-                          onPressed: saving ? null : saveAssignment,
+                          onPressed:
+                              (saving ||
+                                  loadingAssignees ||
+                                  assigneesLoadError != null)
+                              ? null
+                              : saveAssignment,
                           style: FilledButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             shape: RoundedRectangleBorder(

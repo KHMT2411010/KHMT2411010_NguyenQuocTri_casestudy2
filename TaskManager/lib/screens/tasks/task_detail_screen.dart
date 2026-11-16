@@ -7,6 +7,7 @@ import '../../utils/date_formatter.dart';
 import '../../widgets/loading_view.dart';
 import '../../widgets/priority_badge.dart';
 import '../../widgets/status_badge.dart';
+import 'task_activity_screen.dart';
 import 'task_edit_screen.dart';
 
 class TaskDetailScreen extends StatefulWidget {
@@ -198,6 +199,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
     if (changed == true && mounted) {
       await loadDetail();
+
+      if (mounted && errorMessage == null) {
+        _showMessage('Cập nhật công việc thành công');
+      }
     }
   }
 
@@ -629,6 +634,24 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                 title: 'Quản lý chia sẻ',
                                 onPressed: openSharing,
                               ),
+                            ],
+
+                            const SizedBox(height: 11),
+                            _actionButton(
+                              icon: Icons.history_rounded,
+                              title: 'Lịch sử hoạt động',
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => TaskActivityScreen(
+                                      taskId: widget.taskId,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            if (canManage) ...[
                               const SizedBox(height: 14),
                               TextButton.icon(
                                 onPressed: deleting ? null : deleteTask,

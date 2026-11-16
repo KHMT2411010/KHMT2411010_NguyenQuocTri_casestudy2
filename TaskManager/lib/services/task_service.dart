@@ -123,11 +123,23 @@ class TaskService {
 
     final data = response['data'];
 
-    if (data is! List) {
-      throw const FormatException('Dữ liệu người được giao không hợp lệ');
+    if (data is! Map) {
+      throw const FormatException('Dữ liệu phân công không hợp lệ');
     }
 
-    return data.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+    final assignees = data['assignees'];
+
+    if (assignees is! List) {
+      throw const FormatException('Danh sách người được giao không hợp lệ');
+    }
+
+    return assignees.map((item) {
+      if (item is! Map) {
+        throw const FormatException('Thông tin người được giao không hợp lệ');
+      }
+
+      return Map<String, dynamic>.from(item);
+    }).toList();
   }
 
   // Giao việc cho nhiều người.

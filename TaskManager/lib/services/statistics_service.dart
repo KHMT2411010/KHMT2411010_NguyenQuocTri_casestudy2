@@ -7,6 +7,9 @@ class TaskStatistics {
   final int completed;
   final int overdue;
   final int highPriority;
+  final int created;
+  final int delegated;
+  final int assigned;
 
   const TaskStatistics({
     required this.total,
@@ -15,6 +18,9 @@ class TaskStatistics {
     required this.completed,
     required this.overdue,
     required this.highPriority,
+    this.created = 0,
+    this.delegated = 0,
+    this.assigned = 0,
   });
 
   double get completionRate {
@@ -41,7 +47,6 @@ class StatisticsService {
     int highPriority = 0;
 
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
 
     for (final task in tasks) {
       final status = task['status']?.toString() ?? 'todo';
@@ -64,9 +69,7 @@ class StatisticsService {
           ?.toLocal();
 
       if (dueDate != null && status != 'completed') {
-        final deadline = DateTime(dueDate.year, dueDate.month, dueDate.day);
-
-        if (deadline.isBefore(today)) {
+        if (dueDate.isBefore(now)) {
           overdue++;
         }
       }
@@ -84,6 +87,27 @@ class StatisticsService {
 
   Future<TaskStatistics> load({String scope = 'all'}) async {
     final tasks = await _taskService.getTasks(scope: scope);
-    return calculate(tasks);
+    final base = calculate(tasks);
+
+    final createdTasks = await _taskService.getTasks(scope: 'created');
+
+    final assignedTasks = await _taskService.getTasks(scope: 'assigned');
+
+    final delegated = createdTasks.where((task) {
+      final assignees = task['assigneeIds'];
+      return assignees is List && assignees.isNotEmpty;
+    }).length;
+
+    return TaskStatistics(
+      total: base.total,
+      pending: base.pending,
+      inProgress: base.inProgress,
+      completed: base.completed,
+      overdue: base.overdue,
+      highPriority: base.highPriority,
+      created: createdTasks.length,
+      delegated: delegated,
+      assigned: assignedTasks.length,
+    );
   }
 }

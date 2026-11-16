@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const TaskShare = require("../models/TaskShare");
+const { createTaskActivity } = require("../services/taskService");
 const User = require("../models/User");
 const { sendEmail } = require("../services/emailService");
 const { createNotification } = require("../services/notificationService");
@@ -72,10 +73,17 @@ exports.createShares = async (req, res, next) => {
     const existingShares = await TaskShare.find({
       taskId: req.task._id,
       userId: { $in: ids },
-    }).select("userId");
+    }).select("userId permission");
 
     const existingIds = new Set(
       existingShares.map((share) => String(share.userId)),
+    );
+
+    const previousSharePermissions = new Map(
+      existingShares.map((share) => [
+        String(share.userId),
+        share.permission,
+      ]),
     );
 
     // Giu nguyen co che chia se va cap nhat quyen cua phan C.
@@ -101,6 +109,58 @@ exports.createShares = async (req, res, next) => {
 
     // D2: Chi gui email cho loi moi chia se moi.
     const newUserIds = ids.filter((id) => !existingIds.has(id));
+
+    // E4: POST permission change history for existing shares.
+    for (const userId of ids) {
+      const oldPermission = previousSharePermissions.get(userId);
+
+      if (!oldPermission || oldPermission === permission) {
+        continue;
+      }
+
+      const activityResult = await createTaskActivity({
+        taskId: req.task._id,
+        userId: req.user.id,
+        action: "share_updated",
+        description:
+          "Da thay doi quyen chia se cua nguoi dung: " +
+          String(userId) +
+          " (" +
+          oldPermission +
+          " -> " +
+          permission +
+          ")",
+      });
+
+      if (!activityResult.success) {
+        console.error(
+          "[E4] Could not record POST share_updated:",
+          activityResult.error
+        );
+      }
+    }
+
+    // E4: Record history only for newly created shares.
+    for (const newUserId of newUserIds) {
+      const activityResult = await createTaskActivity({
+        taskId: req.task._id,
+        userId: req.user.id,
+        action: "share_created",
+        description:
+          "Da chia se cong viec cho nguoi dung: " +
+          String(newUserId) +
+          " (quyen: " +
+          permission +
+          ")",
+      });
+
+      if (!activityResult.success) {
+        console.error(
+          "[E4] Could not record share_created:",
+          activityResult.error
+        );
+      }
+    }
 
     if (newUserIds.length > 0) {
       try {
@@ -191,6 +251,13 @@ exports.updateShare = async (req, res, next) => {
       });
     }
 
+    const previousShare = await TaskShare.findOne({
+      _id: shareId,
+      taskId: req.task._id,
+    }).select("permission userId");
+
+    const previousPermission = previousShare?.permission;
+
     const share = await TaskShare.findOneAndUpdate(
       {
         _id: shareId,
@@ -205,6 +272,29 @@ exports.updateShare = async (req, res, next) => {
         success: false,
         message: "Không tìm thấy bản ghi chia sẻ",
       });
+    }
+
+    if (previousPermission && previousPermission !== permission) {
+      const activityResult = await createTaskActivity({
+        taskId: req.task._id,
+        userId: req.user.id,
+        action: "share_updated",
+        description:
+          "Da thay doi quyen chia se cua nguoi dung: " +
+          String(share.userId) +
+          " (" +
+          previousPermission +
+          " -> " +
+          permission +
+          ")",
+      });
+
+      if (!activityResult.success) {
+        console.error(
+          "[E4] Could not record share_updated:",
+          activityResult.error
+        );
+      }
     }
 
     res.json({
@@ -239,6 +329,26 @@ exports.deleteShare = async (req, res, next) => {
         success: false,
         message: "Không tìm thấy bản ghi chia sẻ",
       });
+    }
+
+    // E4: Record history after successful share deletion.
+    const activityResult = await createTaskActivity({
+      taskId: req.task._id,
+      userId: req.user.id,
+      action: "share_removed",
+      description:
+        "Da thu hoi chia se cua nguoi dung: " +
+        String(share.userId) +
+        " (quyen cu: " +
+        share.permission +
+        ")",
+    });
+
+    if (!activityResult.success) {
+      console.error(
+        "[E4] Could not record share_removed:",
+        activityResult.error
+      );
     }
 
     res.json({

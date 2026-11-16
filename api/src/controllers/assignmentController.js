@@ -1,3 +1,4 @@
+const { createTaskActivity } = require("../services/taskService");
 const mongoose = require("mongoose");
 const Task = require("../models/Task");
 const User = require("../models/User");
@@ -44,6 +45,11 @@ exports.assignUsers = async (req, res, next) => {
 
     const task = req.task;
 
+    // E4: Capture primary assignee before updating assignment.
+    const previousPrimaryForPost = task.primaryAssigneeId
+      ? String(task.primaryAssigneeId)
+      : null;
+
     const existingAssigneeIds = new Set(
       task.assigneeIds.map((id) => String(id)),
     );
@@ -83,6 +89,49 @@ exports.assignUsers = async (req, res, next) => {
     }
 
     await task.save();
+
+    // E4: Track primary change through POST.
+    const currentPrimaryForPost = task.primaryAssigneeId
+      ? String(task.primaryAssigneeId)
+      : null;
+
+    if (previousPrimaryForPost !== currentPrimaryForPost) {
+      const primaryActivityResult = await createTaskActivity({
+        taskId: task._id,
+        userId: req.user.id,
+        action: "assignee_updated",
+        description:
+          "Da thay doi nguoi phu trach chinh: " +
+          (previousPrimaryForPost || "none") +
+          " -> " +
+          (currentPrimaryForPost || "none"),
+      });
+
+      if (!primaryActivityResult.success) {
+        console.error(
+          "[E4] Could not record POST primary change:",
+          primaryActivityResult.error
+        );
+      }
+    }
+    // E4: Record new assignees.
+    if (newAssigneeIds.length > 0) {
+      const activityResult = await createTaskActivity({
+        taskId: task._id,
+        userId: req.user.id,
+        action: "assignee_added",
+        description:
+          "Da giao cong viec cho nguoi dung: " +
+          newAssigneeIds.join(", "),
+      });
+
+      if (!activityResult.success) {
+        console.error(
+          "[E4] Could not record assignee_added:",
+          activityResult.error
+        );
+      }
+    }
 
     // D1 va D7: Xu ly nguoi moi duoc giao.
     if (newAssigneeIds.length > 0) {
@@ -182,8 +231,34 @@ exports.updateAssignee = async (req, res, next) => {
       });
     }
 
+    // E4: Remember the previous primary assignee.
+    const previousPrimaryAssigneeId = task.primaryAssigneeId
+      ? String(task.primaryAssigneeId)
+      : null;
+
     task.primaryAssigneeId = userId;
     await task.save();
+
+    // E4: Record only actual primary assignee changes.
+    if (previousPrimaryAssigneeId !== String(userId)) {
+      const activityResult = await createTaskActivity({
+        taskId: task._id,
+        userId: req.user.id,
+        action: "assignee_updated",
+        description:
+          "Da thay doi nguoi phu trach chinh: " +
+          (previousPrimaryAssigneeId || "none") +
+          " -> " +
+          String(userId),
+      });
+
+      if (!activityResult.success) {
+        console.error(
+          "[E4] Could not record assignee_updated:",
+          activityResult.error
+        );
+      }
+    }
 
     res.json({
       success: true,
@@ -224,6 +299,22 @@ exports.removeAssignee = async (req, res, next) => {
     }
 
     await task.save();
+
+    // E4: Record successful assignee removal.
+    const activityResult = await createTaskActivity({
+      taskId: task._id,
+      userId: req.user.id,
+      action: "assignee_removed",
+      description:
+        "Da huy phan cong nguoi dung: " + String(userId),
+    });
+
+    if (!activityResult.success) {
+      console.error(
+        "[E4] Could not record assignee_removed:",
+        activityResult.error
+      );
+    }
 
     res.json({
       success: true,
