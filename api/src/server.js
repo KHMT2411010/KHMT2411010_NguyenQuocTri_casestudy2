@@ -1,8 +1,8 @@
-
 require("dotenv").config();
 
 const mongoose = require("mongoose");
 const app = require("./app");
+const { startReminderScheduler } = require("./services/reminderScheduler");
 
 const PORT = process.env.PORT || 3000;
 
@@ -22,6 +22,9 @@ async function startServer() {
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running at http://localhost:${PORT}`);
+
+      // D5 - Bat dau kiem tra nhac viec sau khi MongoDB ket noi.
+      startReminderScheduler();
     });
   } catch (error) {
     console.error("Khoi dong that bai:", error.message);

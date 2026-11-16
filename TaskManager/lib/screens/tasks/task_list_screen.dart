@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../services/api_client.dart';
 import '../../services/task_service.dart';
+import '../../services/notification_service.dart';
+import '../notifications/notification_screen.dart';
 import '../../utils/constants.dart';
 import '../../widgets/task_card.dart';
 import '../../widgets/loading_view.dart';
@@ -52,11 +54,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
       // Lay ID cua tai khoan dang dang nhap.
       final meResponse = await ApiClient.get('/api/auth/me');
       final meData = meResponse['data'];
-      final String loadedUserName = meData is Map
-          ? (meData['fullName'] ?? meData['name'] ?? 'Tài khoản')
-                .toString()
-                .trim()
-          : 'Tài khoản';
 
       final String? currentUserId = meData is Map
           ? (meData['_id'] ?? meData['id'])?.toString()
@@ -107,6 +104,35 @@ class _TaskListScreenState extends State<TaskListScreen> {
   }
 
   final TaskService _taskService = const TaskService();
+  final NotificationService _notificationService = const NotificationService();
+
+  int unreadNotificationCount = 0;
+
+  Future<void> loadUnreadNotifications() async {
+    try {
+      final count = await _notificationService.getUnreadCount();
+
+      if (!mounted) return;
+
+      setState(() {
+        unreadNotificationCount = count;
+      });
+    } catch (error) {
+      debugPrint('Khong tai duoc so thong bao: $error');
+    }
+  }
+
+  Future<void> openNotifications() async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const NotificationScreen()));
+
+    if (!mounted) return;
+
+    await loadUnreadNotifications();
+    await loadTasks();
+  }
+
   final TextEditingController searchController = TextEditingController();
 
   List<Map<String, dynamic>> tasks = [];
@@ -126,6 +152,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
     loadCurrentUser();
     loadAssigneeOptions();
     loadTasks();
+    loadUnreadNotifications();
   }
 
   @override
@@ -725,35 +752,47 @@ class _TaskListScreenState extends State<TaskListScreen> {
         foregroundColor: AppColors.navy,
         titleSpacing: 12,
 
-
         title: narrowHeader
             ? TextButton.icon(
-          onPressed: openProfile,
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-          ),
-          icon: const Icon(
-            Icons.account_circle_rounded,
-            color: AppColors.primary,
-            size: 25,
-          ),
-          label: Text(
-            currentUserName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF173A70),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        )
+                onPressed: openProfile,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                ),
+                icon: const Icon(
+                  Icons.account_circle_rounded,
+                  color: AppColors.primary,
+                  size: 25,
+                ),
+                label: Text(
+                  currentUserName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF173A70),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              )
             : const Text(
-          'TaskFlow',
-          style: TextStyle(fontWeight: FontWeight.w900),
-        ),
+                'TaskFlow',
+                style: TextStyle(fontWeight: FontWeight.w900),
+              ),
 
         actions: [
+          IconButton(
+            tooltip: 'Thông báo trong ứng dụng',
+            onPressed: openNotifications,
+            icon: Badge(
+              isLabelVisible: unreadNotificationCount > 0,
+              label: Text(
+                unreadNotificationCount > 99
+                    ? '99+'
+                    : '$unreadNotificationCount',
+              ),
+              child: const Icon(Icons.notifications_none_rounded, size: 25),
+            ),
+          ),
           IconButton(
             tooltip: 'Làm mới',
             onPressed: loading ? null : loadTasks,
@@ -807,105 +846,101 @@ class _TaskListScreenState extends State<TaskListScreen> {
         icon: const Icon(Icons.add_rounded),
         label: const Text('Tạo công việc'),
       ),
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFFE5F1FF),
-                Color(0xFFF2F8FF),
-                Colors.white,
-              ],
-              stops: [0.0, 0.48, 1.0],
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFE5F1FF), Color(0xFFF2F8FF), Colors.white],
+            stops: [0.0, 0.48, 1.0],
           ),
-          child: RefreshIndicator(
-        onRefresh: loadTasks,
-        child: LayoutBuilder(
-          builder: (context, viewport) {
-            final compact = viewport.maxWidth < 600;
+        ),
+        child: RefreshIndicator(
+          onRefresh: loadTasks,
+          child: LayoutBuilder(
+            builder: (context, viewport) {
+              final compact = viewport.maxWidth < 600;
 
-            return ListView(
-              padding: EdgeInsets.fromLTRB(
-                compact ? 14 : 24,
-                16,
-                compact ? 14 : 24,
-                110,
-              ),
-              children: [
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1050),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        dashboardHeader(),
-                        const SizedBox(height: 25),
-                        const Text(
-                          'Công việc của bạn',
-                          style: TextStyle(
-                            color: AppColors.navy,
-                            fontSize: 21,
-                            fontWeight: FontWeight.w800,
+              return ListView(
+                padding: EdgeInsets.fromLTRB(
+                  compact ? 14 : 24,
+                  16,
+                  compact ? 14 : 24,
+                  110,
+                ),
+                children: [
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1050),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          dashboardHeader(),
+                          const SizedBox(height: 25),
+                          const Text(
+                            'Công việc của bạn',
+                            style: TextStyle(
+                              color: AppColors.navy,
+                              fontSize: 21,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Theo dõi và quản lý tiến độ mỗi ngày',
-                          style: TextStyle(
-                            color: AppColors.muted,
-                            fontSize: 13,
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Theo dõi và quản lý tiến độ mỗi ngày',
+                            style: TextStyle(
+                              color: AppColors.muted,
+                              fontSize: 13,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 19),
-                        filters(),
-                        const SizedBox(height: 22),
-                        Row(
-                          children: [
-                            const Expanded(
-                              child: Text(
-                                'Danh sách công việc',
-                                style: TextStyle(
-                                  color: AppColors.navy,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 16,
+                          const SizedBox(height: 19),
+                          filters(),
+                          const SizedBox(height: 22),
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: Text(
+                                  'Danh sách công việc',
+                                  style: TextStyle(
+                                    color: AppColors.navy,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
-                            ),
-                            Text(
-                              '${filtered.length} mục',
-                              style: const TextStyle(
-                                color: AppColors.muted,
-                                fontSize: 12,
+                              Text(
+                                '${filtered.length} mục',
+                                style: const TextStyle(
+                                  color: AppColors.muted,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 13),
+                          if (loading)
+                            const LoadingView(message: 'Đang tải công việc...')
+                          else if (errorMessage != null)
+                            errorState()
+                          else if (filtered.isEmpty)
+                            emptyState()
+                          else
+                            ...filtered.map(
+                              (task) => TaskCard(
+                                task: task,
+                                onTap: () => openDetail(task),
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 13),
-                        if (loading)
-                          const LoadingView(message: 'Đang tải công việc...')
-                        else if (errorMessage != null)
-                          errorState()
-                        else if (filtered.isEmpty)
-                          emptyState()
-                        else
-                          ...filtered.map(
-                            (task) => TaskCard(
-                              task: task,
-                              onTap: () => openDetail(task),
-                            ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
-    ),
     );
   }
 }

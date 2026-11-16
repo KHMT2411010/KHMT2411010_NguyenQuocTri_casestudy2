@@ -1,4 +1,3 @@
-
 const express = require("express");
 const router = express.Router();
 
@@ -16,31 +15,23 @@ router.get("/", taskController.getTasks);
 router.post("/", taskController.createTask);
 
 // Xem chi tiết công việc
-router.get(
-  "/:id",
-  permissionMiddleware("view"),
-  taskController.getTaskById
-);
+router.get("/:id", permissionMiddleware("view"), taskController.getTaskById);
 
 // Chỉnh sửa công việc
-router.put(
-  "/:id",
-  permissionMiddleware("edit"),
-  taskController.updateTask
-);
+router.put("/:id", permissionMiddleware("edit"), taskController.updateTask);
 
 // Cập nhật trạng thái
 router.patch(
   "/:id/status",
   permissionMiddleware("status"),
-  taskController.updateStatus
+  taskController.updateStatus,
 );
 
 // Xóa công việc: người tạo hoặc người được giao
 router.delete(
   "/:id",
   permissionMiddleware("manage"),
-  taskController.deleteTask
+  taskController.deleteTask,
 );
 
 module.exports = router;

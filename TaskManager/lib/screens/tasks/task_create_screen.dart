@@ -87,8 +87,8 @@ class _TaskEditorFieldsState extends State<TaskEditorFields> {
       priority = savedPriority!;
     }
 
-    startDate = AppDateFormatter.parse(task['startDate']);
-    dueDate = AppDateFormatter.parse(task['dueDate']);
+    startDate = AppDateFormatter.parse(task['startDate'])?.toLocal();
+    dueDate = AppDateFormatter.parse(task['dueDate'])?.toLocal();
   }
 
   @override

@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 const Task = require("../models/Task");
 const TaskShare = require("../models/TaskShare");
@@ -12,7 +11,7 @@ const permissionMiddleware = (requiredPermission) => {
       if (!mongoose.isValidObjectId(taskId)) {
         return res.status(400).json({
           success: false,
-          message: "ID công việc không hợp lệ"
+          message: "ID công việc không hợp lệ",
         });
       }
 
@@ -21,25 +20,22 @@ const permissionMiddleware = (requiredPermission) => {
       if (!task) {
         return res.status(404).json({
           success: false,
-          message: "Không tìm thấy công việc"
+          message: "Không tìm thấy công việc",
         });
       }
 
-      const isOwner =
-        String(task.createdBy) === String(userId);
+      const isOwner = String(task.createdBy) === String(userId);
 
       const isAssignee =
         Array.isArray(task.assigneeIds) &&
-        task.assigneeIds.some(
-          (id) => String(id) === String(userId)
-        );
+        task.assigneeIds.some((id) => String(id) === String(userId));
 
       let share = null;
 
       if (!isOwner && !isAssignee) {
         share = await TaskShare.findOne({
           taskId: task._id,
-          userId
+          userId,
         });
       }
 
@@ -50,30 +46,19 @@ const permissionMiddleware = (requiredPermission) => {
 
       switch (requiredPermission) {
         case "view":
-          allowed =
-            isOwner ||
-            isAssignee ||
-            isEditor ||
-            isViewer;
+          allowed = isOwner || isAssignee || isEditor || isViewer;
           break;
 
         case "edit":
-          allowed =
-            isOwner ||
-            isAssignee ||
-            isEditor;
+          allowed = isOwner || isAssignee || isEditor;
           break;
 
         case "status":
-          allowed =
-            isOwner ||
-            isAssignee;
+          allowed = isOwner || isAssignee;
           break;
 
         case "manage":
-          allowed =
-            isOwner ||
-            isAssignee;
+          allowed = isOwner || isAssignee;
           break;
 
         case "owner":
@@ -87,7 +72,7 @@ const permissionMiddleware = (requiredPermission) => {
       if (!allowed) {
         return res.status(403).json({
           success: false,
-          message: "Bạn không có quyền thực hiện"
+          message: "Bạn không có quyền thực hiện",
         });
       }
 

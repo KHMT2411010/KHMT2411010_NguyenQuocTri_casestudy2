@@ -1,0 +1,30 @@
+[
+  {
+    "_id": "6afb32e1bfe7df82a62dce42",
+    "reminderId": "6afb2e97bfe7df82a62dcdd9",
+    "__v": 0,
+    "createdAt": "2026-11-16T16:44:19.343Z",
+    "isRead": false,
+    "message": "C?ng vi?c \"test d7\" s?p ??n h?n. Vui l?ng ki?m tra ti?n ??.",
+    "readAt": null,
+    "taskId": "6afb1bc09208a364c6e54209",
+    "title": "C?ng vi?c s?p ??n h?n",
+    "type": "task_reminder",
+    "updatedAt": "2026-11-16T16:44:19.395Z",
+    "userId": "6ae55b12086f4c61ddf57ca4"
+  },
+  {
+    "_id": "6afb32e2bfe7df82a62dce43",
+    "reminderId": "6afb2e9abfe7df82a62dcdda",
+    "__v": 0,
+    "createdAt": "2026-11-16T16:44:19.486Z",
+    "isRead": true,
+    "message": "C?ng vi?c \"test d7\" s?p ??n h?n. Vui l?ng ki?m tra ti?n ??.",
+    "readAt": "2026-11-16T16:45:34.385Z",
+    "taskId": "6afb1bc09208a364c6e54209",
+    "title": "C?ng vi?c s?p ??n h?n",
+    "type": "task_reminder",
+    "updatedAt": "2026-11-16T16:45:34.385Z",
+    "userId": "6ae9896afc07aab298246a71"
+  }
+]

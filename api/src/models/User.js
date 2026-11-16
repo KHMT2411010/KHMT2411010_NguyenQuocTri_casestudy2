@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
@@ -6,7 +5,7 @@ const userSchema = new mongoose.Schema(
     fullName: {
       type: String,
       required: [true, "Vui lòng nhập họ tên"],
-      trim: true
+      trim: true,
     },
 
     email: {
@@ -14,23 +13,23 @@ const userSchema = new mongoose.Schema(
       required: [true, "Vui lòng nhập email"],
       unique: true,
       lowercase: true,
-      trim: true
+      trim: true,
     },
 
     passwordHash: {
       type: String,
       required: [true, "Vui lòng nhập mật khẩu"],
-      select: false
+      select: false,
     },
 
     avatarUrl: {
       type: String,
-      default: ""
-    }
+      default: "",
+    },
   },
   {
-    timestamps: true
-  }
+    timestamps: true,
+  },
 );
 
 module.exports = mongoose.model("User", userSchema);

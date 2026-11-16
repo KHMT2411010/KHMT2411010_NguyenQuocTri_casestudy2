@@ -1,10 +1,10 @@
-
 const mongoose = require("mongoose");
 const Task = require("../models/Task");
-const TaskShare = require("../models/TaskShare");
+const TaskShare = require("../models/TaskShare"); // GET /api/tasks
+const User = require("../models/User");
+const { sendEmail } = require("../services/emailService");
+const { createNotification } = require("../services/notificationService");
 
-
-﻿// GET /api/tasks
 exports.getTasks = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -22,7 +22,7 @@ exports.getTasks = async (req, res, next) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: "Nguoi phu trach khong hop le"
+        message: "Nguoi phu trach khong hop le",
       });
     }
 
@@ -32,35 +32,34 @@ exports.getTasks = async (req, res, next) => {
     const validSortFields = ["createdAt", "dueDate", "priority"];
     const validSortOrders = ["asc", "desc"];
 
-
     if (
-    !validSortFields.includes(sortBy) ||
-    !validSortOrders.includes(sortOrder)
+      !validSortFields.includes(sortBy) ||
+      !validSortOrders.includes(sortOrder)
     ) {
-    return res.status(400).json({
-    success: false,
-    message: "Tieu chi sap xep khong hop le"
-    });
+      return res.status(400).json({
+        success: false,
+        message: "Tieu chi sap xep khong hop le",
+      });
     }
 
     if (!validScopes.includes(scope)) {
       return res.status(400).json({
         success: false,
-        message: "Bo loc cong viec khong hop le"
+        message: "Bo loc cong viec khong hop le",
       });
     }
 
     if (status && !validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
-        message: "Trang thai khong hop le"
+        message: "Trang thai khong hop le",
       });
     }
 
     if (priority && !validPriorities.includes(priority)) {
       return res.status(400).json({
         success: false,
-        message: "Muc do uu tien khong hop le"
+        message: "Muc do uu tien khong hop le",
       });
     }
 
@@ -72,7 +71,7 @@ exports.getTasks = async (req, res, next) => {
       filter = { assigneeIds: userId };
     } else {
       const shares = await TaskShare.find({
-        userId: userId
+        userId: userId,
       }).select("taskId");
 
       const sharedIds = shares.map((share) => share.taskId);
@@ -84,8 +83,8 @@ exports.getTasks = async (req, res, next) => {
           $or: [
             { createdBy: userId },
             { assigneeIds: userId },
-            { _id: { $in: sharedIds } }
-          ]
+            { _id: { $in: sharedIds } },
+          ],
         };
       }
     }
@@ -99,23 +98,18 @@ exports.getTasks = async (req, res, next) => {
       filter.priority = priority;
     }
 
-
-if (assigneeId === "me") {
-  filter = {
-    $and: [
-      filter,
-      {
-        $or: [
-          { createdBy: userId },
-          { assigneeIds: userId }
-        ]
-      }
-    ]
-  };
-} else if (assigneeId) {
-  filter.assigneeIds = assigneeId;
-}
-
+    if (assigneeId === "me") {
+      filter = {
+        $and: [
+          filter,
+          {
+            $or: [{ createdBy: userId }, { assigneeIds: userId }],
+          },
+        ],
+      };
+    } else if (assigneeId) {
+      filter.assigneeIds = assigneeId;
+    }
 
     const tasks = await Task.find(filter)
       .populate("createdBy", "fullName email")
@@ -123,63 +117,54 @@ if (assigneeId === "me") {
       .populate("primaryAssigneeId", "fullName email")
       .sort({ createdAt: -1 });
 
-
     // B7: Sap xep danh sach sau khi ap dung bo loc B6.
     const priorityRank = {
-    low: 1,
-    medium: 2,
-    high: 3
+      low: 1,
+      medium: 2,
+      high: 3,
     };
 
     tasks.sort((a, b) => {
-    let comparison = 0;
+      let comparison = 0;
 
-    if (sortBy === "priority") {
-    comparison =
-    (priorityRank[a.priority] ?? 0) -
-    (priorityRank[b.priority] ?? 0);
-    } else {
-    const dateA = a[sortBy] ? new Date(a[sortBy]).getTime() : null;
-    const dateB = b[sortBy] ? new Date(b[sortBy]).getTime() : null;
+      if (sortBy === "priority") {
+        comparison =
+          (priorityRank[a.priority] ?? 0) - (priorityRank[b.priority] ?? 0);
+      } else {
+        const dateA = a[sortBy] ? new Date(a[sortBy]).getTime() : null;
+        const dateB = b[sortBy] ? new Date(b[sortBy]).getTime() : null;
 
-    // Cong viec khong co ngay hop le duoc xep cuoi.
-    const validA = dateA !== null && Number.isFinite(dateA);
-    const validB = dateB !== null && Number.isFinite(dateB);
+        // Cong viec khong co ngay hop le duoc xep cuoi.
+        const validA = dateA !== null && Number.isFinite(dateA);
+        const validB = dateB !== null && Number.isFinite(dateB);
 
-    if (!validA && validB) return 1;
-    if (validA && !validB) return -1;
+        if (!validA && validB) return 1;
+        if (validA && !validB) return -1;
 
-    if (validA && validB) {
-    comparison = dateA - dateB;
-    }
-    }
+        if (validA && validB) {
+          comparison = dateA - dateB;
+        }
+      }
 
-    if (comparison !== 0) {
-    return sortOrder === "asc" ? comparison : -comparison;
-    }
+      if (comparison !== 0) {
+        return sortOrder === "asc" ? comparison : -comparison;
+      }
 
-    // Neu gia tri bang nhau, uu tien cong viec moi tao.
-    return (
-    new Date(b.createdAt).getTime() -
-    new Date(a.createdAt).getTime()
-    );
+      // Neu gia tri bang nhau, uu tien cong viec moi tao.
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-
 
     // Tim quyen chia se cua tai khoan dang dang nhap
     // tren nhung cong viec duoc phep xem.
     const sharesForUser = await TaskShare.find({
       taskId: { $in: tasks.map((task) => task._id) },
-      userId: userId
+      userId: userId,
     }).select("taskId permission");
 
     const sharePermissions = new Map();
 
     for (const share of sharesForUser) {
-      sharePermissions.set(
-        String(share.taskId),
-        share.permission
-      );
+      sharePermissions.set(String(share.taskId), share.permission);
     }
 
     // Xac dinh vai tro thuc te tren tung cong viec.
@@ -192,16 +177,12 @@ if (assigneeId === "me") {
 
       const isOwner = creatorId === String(userId);
 
-      const isAssignee = (task.assigneeIds || []).some(
-        (person) => {
-          const id = person?._id ?? person;
-          return String(id) === String(userId);
-        }
-      );
+      const isAssignee = (task.assigneeIds || []).some((person) => {
+        const id = person?._id ?? person;
+        return String(id) === String(userId);
+      });
 
-      const sharePermission = sharePermissions.get(
-        String(task._id)
-      );
+      const sharePermission = sharePermissions.get(String(task._id));
 
       let myRole = null;
 
@@ -217,38 +198,30 @@ if (assigneeId === "me") {
 
       return {
         ...taskData,
-        myRole
+        myRole,
       };
     });
 
     return res.status(200).json({
       success: true,
       count: tasksWithRole.length,
-      data: tasksWithRole
+      data: tasksWithRole,
     });
-
   } catch (error) {
     next(error);
   }
 };
 
-
 // POST /api/tasks
 exports.createTask = async (req, res, next) => {
   try {
-    const {
-      title,
-      description,
-      startDate,
-      dueDate,
-      priority,
-      status
-    } = req.body;
+    const { title, description, startDate, dueDate, priority, status } =
+      req.body;
 
     if (typeof title !== "string" || !title.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Tên công việc không được để trống"
+        message: "Tên công việc không được để trống",
       });
     }
 
@@ -260,13 +233,13 @@ exports.createTask = async (req, res, next) => {
       priority: priority || "medium",
       status: status || "todo",
       createdBy: req.user.id,
-      assigneeIds: []
+      assigneeIds: [],
     });
 
     res.status(201).json({
       success: true,
       message: "Tạo công việc thành công",
-      data: task
+      data: task,
     });
   } catch (error) {
     next(error);
@@ -283,14 +256,17 @@ exports.getTaskById = async (req, res, next) => {
 
     res.json({
       success: true,
-      data: task
+      data: task,
     });
   } catch (error) {
     next(error);
   }
 };
 
-// PUT /api/tasks/:id
+/**
+ * PUT /api/tasks/:id
+ * D3 - Gui email khi thong tin cong viec thay doi.
+ */
 exports.updateTask = async (req, res, next) => {
   try {
     const allowed = [
@@ -298,7 +274,7 @@ exports.updateTask = async (req, res, next) => {
       "description",
       "startDate",
       "dueDate",
-      "priority"
+      "priority",
     ];
 
     const updates = {};
@@ -311,55 +287,315 @@ exports.updateTask = async (req, res, next) => {
 
     if (
       updates.title !== undefined &&
-      (typeof updates.title !== "string" ||
-        !updates.title.trim())
+      (typeof updates.title !== "string" || !updates.title.trim())
     ) {
       return res.status(400).json({
         success: false,
-        message: "Tên công việc không hợp lệ"
+        message: "Tên công việc không hợp lệ",
       });
     }
 
+    // Luu thong tin truoc khi cap nhat de so sanh.
+    const oldTask = await Task.findById(req.task._id);
+
+    if (!oldTask) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy công việc",
+      });
+    }
+
+    // Giu nguyen co che cap nhat va validate hien tai.
     const task = await Task.findByIdAndUpdate(
       req.task._id,
       { $set: updates },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy công việc",
+      });
+    }
+
+    // D3: So sanh gia tri truoc va sau khi luu.
+    const fieldLabels = {
+      title: "Tên công việc",
+      description: "Mô tả",
+      startDate: "Ngày bắt đầu",
+      dueDate: "Hạn hoàn thành",
+      priority: "Mức độ ưu tiên",
+    };
+
+    const formatValue = (field, value) => {
+      if (value === undefined || value === null || value === "") {
+        return "(Chưa có)";
+      }
+
+      if (field === "startDate" || field === "dueDate") {
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+          return String(value);
+        }
+
+        return date.toLocaleDateString("vi-VN", {
+          timeZone: "Asia/Ho_Chi_Minh",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+      }
+
+      return String(value);
+    };
+
+    const changedFields = [];
+
+    for (const field of Object.keys(updates)) {
+      const oldValue = formatValue(field, oldTask[field]);
+      const newValue = formatValue(field, task[field]);
+
+      if (oldValue !== newValue) {
+        changedFields.push({
+          label: fieldLabels[field],
+          oldValue,
+          newValue,
+        });
+      }
+    }
+
+    // D3: Chi gui email neu co thay doi thuc su.
+    if (changedFields.length > 0) {
+      try {
+        // Tim nguoi duoc chia se cong viec.
+        const shares = await TaskShare.find({
+          taskId: task._id,
+        }).select("userId");
+
+        // Gop danh sach nguoi lien quan va loai trung.
+        const recipientIds = new Set();
+
+        recipientIds.add(String(task.createdBy));
+
+        for (const id of task.assigneeIds || []) {
+          recipientIds.add(String(id));
+        }
+
+        for (const share of shares) {
+          recipientIds.add(String(share.userId));
+        }
+
+        // Khong gui email cho nguoi vua thuc hien thay doi.
+        recipientIds.delete(String(req.user.id));
+
+        const recipients = await User.find({
+          _id: { $in: [...recipientIds] },
+        }).select("fullName email");
+
+        // Tao noi dung thong bao thay doi.
+        const changeDetails = changedFields
+          .map(
+            (item) =>
+              item.label +
+              ":\n" +
+              "  Truoc: " +
+              item.oldValue +
+              "\n" +
+              "  Sau: " +
+              item.newValue,
+          )
+          .join("\n\n");
+
+        for (const user of recipients) {
+          // D7: Tao thong bao khi thong tin cong viec thay doi.
+          const notificationResult = await createNotification({
+            userId: user._id,
+            taskId: task._id,
+            type: "task_updated",
+            title: "Công việc đã được cập nhật",
+            message: 'Thông tin công việc "' + task.title + '" vừa thay đổi.',
+          });
+
+          if (!notificationResult.success) {
+            console.error("D7 update notification failed:", String(user._id));
+          }
+
+          // D3 + D6: Giu nguyen email va lich su gui email.
+          const result = await sendEmail({
+            to: user.email,
+            taskId: task._id,
+            userId: user._id,
+            eventType: "task_updated",
+            subject: "[TaskManager] Thong tin cong viec da thay doi",
+            text:
+              "Xin chao " +
+              user.fullName +
+              ",\n\n" +
+              "Mot cong viec ban tham gia vua duoc cap nhat.\n\n" +
+              "Cong viec: " +
+              task.title +
+              "\n\n" +
+              "Noi dung thay doi:\n\n" +
+              changeDetails +
+              "\n\n" +
+              "Vui long dang nhap TaskManager de xem chi tiet.\n\n" +
+              "TaskManager",
+          });
+
+          if (!result.success) {
+            console.error("D3 email failed for user:", String(user._id));
+          }
+        }
+      } catch (emailError) {
+        // Loi email khong lam that bai viec cap nhat.
+        console.error("D3 notification error:", emailError.message);
+      }
+    }
 
     res.json({
       success: true,
       message: "Cập nhật công việc thành công",
-      data: task
+      data: task,
     });
   } catch (error) {
     next(error);
   }
 };
 
-// PATCH /api/tasks/:id/status
+/**
+ * PATCH /api/tasks/:id/status
+ * D4 - Gui email khi cong viec hoan thanh.
+ */
 exports.updateStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
 
-    if (
-      !["todo", "in_progress", "completed"].includes(status)
-    ) {
+    if (!["todo", "in_progress", "completed"].includes(status)) {
       return res.status(400).json({
         success: false,
-        message: "Trạng thái không hợp lệ"
+        message: "Trạng thái không hợp lệ",
       });
     }
 
-    const task = await Task.findByIdAndUpdate(
-      req.task._id,
-      { status },
-      { new: true, runValidators: true }
-    );
+    // Chi xac nhan hoan thanh khi trang thai cu khac completed.
+    // Dieu kien duoc kiem tra trong thao tac cap nhat de tranh
+    // hai yeu cau dong thoi cung tao email hoan thanh.
+
+    const completedTransition =
+      status === "completed"
+        ? await Task.findOneAndUpdate(
+            {
+              _id: req.task._id,
+              status: { $ne: "completed" },
+            },
+            { $set: { status: "completed" } },
+            { new: true, runValidators: true },
+          )
+        : null;
+
+    let task;
+    let shouldNotify = false;
+
+    if (status === "completed" && completedTransition) {
+      task = completedTransition;
+      shouldNotify = true;
+    } else if (status === "completed") {
+      task = await Task.findById(req.task._id);
+    } else {
+      task = await Task.findByIdAndUpdate(
+        req.task._id,
+        { $set: { status } },
+        { new: true, runValidators: true },
+      );
+    }
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy công việc",
+      });
+    }
+
+    if (shouldNotify) {
+      try {
+        const shares = await TaskShare.find({
+          taskId: task._id,
+        }).select("userId");
+
+        const recipientIds = new Set();
+
+        recipientIds.add(String(task.createdBy));
+
+        for (const userId of task.assigneeIds || []) {
+          recipientIds.add(String(userId));
+        }
+
+        for (const share of shares) {
+          recipientIds.add(String(share.userId));
+        }
+
+        // Khong gui email cho nguoi vua hoan thanh cong viec.
+        recipientIds.delete(String(req.user.id));
+
+        const recipients = await User.find({
+          _id: { $in: [...recipientIds] },
+        }).select("fullName email");
+
+        for (const user of recipients) {
+          // D7: Tao thong bao khi cong viec hoan thanh.
+          // Doc lap voi ket qua gui email.
+          const notificationResult = await createNotification({
+            userId: user._id,
+            taskId: task._id,
+            type: "task_completed",
+            title: "Công việc đã hoàn thành",
+            message: 'Công việc "' + task.title + '" đã được hoàn thành.',
+          });
+
+          if (!notificationResult.success) {
+            console.error(
+              "D7 completed notification failed:",
+              String(user._id),
+            );
+          }
+
+          // D4 + D6: Giu nguyen email va lich su gui email.
+          const result = await sendEmail({
+            to: user.email,
+            taskId: task._id,
+            userId: user._id,
+            eventType: "task_completed",
+
+            subject: "[TaskManager] Cong viec da hoan thanh",
+            text:
+              "Xin chao " +
+              user.fullName +
+              ",\n\n" +
+              "Mot cong viec ban tham gia da duoc danh dau hoan thanh.\n\n" +
+              "Ten cong viec: " +
+              task.title +
+              "\n" +
+              "Trang thai: Hoan thanh\n\n" +
+              "Vui long dang nhap TaskManager de xem chi tiet.\n\n" +
+              "TaskManager",
+          });
+
+          if (!result.success) {
+            console.error("D4 email failed for user:", String(user._id));
+          }
+        }
+      } catch (emailError) {
+        // Loi email khong lam that bai cap nhat trang thai.
+        console.error("D4 notification error:", emailError.message);
+      }
+    }
 
     res.json({
       success: true,
       message: "Cập nhật trạng thái thành công",
-      data: task
+      data: task,
     });
   } catch (error) {
     next(error);
@@ -370,14 +606,14 @@ exports.updateStatus = async (req, res, next) => {
 exports.deleteTask = async (req, res, next) => {
   try {
     await TaskShare.deleteMany({
-      taskId: req.task._id
+      taskId: req.task._id,
     });
 
     await Task.findByIdAndDelete(req.task._id);
 
     res.json({
       success: true,
-      message: "Xóa công việc thành công"
+      message: "Xóa công việc thành công",
     });
   } catch (error) {
     next(error);

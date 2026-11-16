@@ -18,7 +18,6 @@ class TaskService {
     const validSortFields = ['createdAt', 'dueDate', 'priority'];
     const validSortOrders = ['asc', 'desc'];
 
-
     if (!validSortFields.contains(sortBy)) {
       throw ArgumentError('Tiêu chí sắp xếp không hợp lệ');
     }

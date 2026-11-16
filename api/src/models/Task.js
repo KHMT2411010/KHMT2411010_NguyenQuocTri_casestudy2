@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const taskSchema = new mongoose.Schema(
@@ -7,60 +6,58 @@ const taskSchema = new mongoose.Schema(
       type: String,
       required: [true, "Tên công việc không được để trống"],
       trim: true,
-      maxlength: 200
+      maxlength: 200,
     },
 
     description: {
       type: String,
-      default: ""
+      default: "",
     },
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
     },
 
     assigneeIds: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-      }
+        ref: "User",
+      },
     ],
 
     primaryAssigneeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null
+      default: null,
     },
 
     startDate: {
       type: Date,
-      default: null
+      default: null,
     },
 
     dueDate: {
       type: Date,
-      default: null
+      default: null,
     },
 
     priority: {
       type: String,
       enum: ["low", "medium", "high"],
-      default: "medium"
+      default: "medium",
     },
 
     status: {
       type: String,
       enum: ["todo", "in_progress", "completed"],
-      default: "todo"
-    }
+      default: "todo",
+    },
   },
   {
-    timestamps: true
-  }
+    timestamps: true,
+  },
 );
 
-module.exports =
-  mongoose.models.Task ||
-  mongoose.model("Task", taskSchema);
+module.exports = mongoose.models.Task || mongoose.model("Task", taskSchema);
