@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../services/task_share_service.dart';
 import '../../services/user_service.dart';
 import '../../utils/constants.dart';
-import '../../utils/validators.dart';
 
 class SharingScreen extends StatefulWidget {
   final String taskId;
@@ -22,6 +23,9 @@ class _SharingScreenState extends State<SharingScreen> {
 
   List<Map<String, dynamic>> shares = [];
   Map<String, dynamic>? foundUser;
+  final List<Map<String, dynamic>> searchResults = [];
+  Timer? _searchTimer;
+  int _searchGeneration = 0;
 
   String permission = 'viewer';
   String? searchMessage;
@@ -40,6 +44,8 @@ class _SharingScreenState extends State<SharingScreen> {
 
   @override
   void dispose() {
+    _searchTimer?.cancel();
+    _searchGeneration++;
     emailController.dispose();
     super.dispose();
   }
@@ -109,43 +115,97 @@ class _SharingScreenState extends State<SharingScreen> {
     }
   }
 
+  void _onSearchChanged(String value) {
+    _searchTimer?.cancel();
+    _searchGeneration++;
+
+    final keyword = value.trim();
+
+    setState(() {
+      foundUser = null;
+      searchResults.clear();
+      searchMessage = null;
+      searching = false;
+    });
+
+    if (keyword.length < 2 || saving || processing) return;
+
+    _searchTimer = Timer(const Duration(milliseconds: 350), () => searchUser());
+  }
+
   Future<void> searchUser() async {
-    if (searching || saving) return;
+    if (saving || processing) return;
 
-    final email = emailController.text.trim();
+    _searchTimer?.cancel();
 
-    final validationError = AppValidators.email(email);
+    final keyword = emailController.text.trim();
+    final generation = ++_searchGeneration;
 
-    if (validationError != null) {
-      showMessage(validationError, error: true);
+    if (keyword.length < 2) {
+      setState(() {
+        searching = false;
+        foundUser = null;
+        searchResults.clear();
+        searchMessage = 'Vui lòng nhập ít nhất 2 ký tự.';
+      });
       return;
     }
 
     setState(() {
       searching = true;
       foundUser = null;
+      searchResults.clear();
       searchMessage = null;
     });
 
     try {
-      final result = await _userService.findByEmail(email);
+      final users = await _userService.searchUsers(keyword);
 
-      if (!mounted) return;
+      if (!mounted || generation != _searchGeneration) return;
+      if (emailController.text.trim() != keyword) return;
 
       setState(() {
-        foundUser = result;
-        searchMessage = result == null
-            ? 'Không tìm thấy tài khoản với email này.'
+        searchResults.addAll(users);
+        searchMessage = users.isEmpty
+            ? 'Không tìm thấy tài khoản phù hợp.'
             : null;
       });
     } catch (error) {
-      showMessage(
-        error.toString().replaceFirst('Exception: ', ''),
-        error: true,
-      );
+      if (!mounted || generation != _searchGeneration) return;
+
+      setState(() {
+        searchResults.clear();
+        searchMessage = error.toString().replaceFirst('Exception: ', '');
+      });
     } finally {
-      if (mounted) setState(() => searching = false);
+      if (mounted && generation == _searchGeneration) {
+        setState(() => searching = false);
+      }
     }
+  }
+
+  void selectSearchUser(Map<String, dynamic> user) {
+    if (saving || processing) return;
+
+    final id = userId(user);
+    final email = userEmail(user).trim();
+
+    if (id.isEmpty || email.isEmpty) {
+      showMessage('Tài khoản không hợp lệ', error: true);
+      return;
+    }
+
+    _searchTimer?.cancel();
+    _searchGeneration++;
+
+    emailController.text = email;
+
+    setState(() {
+      foundUser = user;
+      searchResults.clear();
+      searchMessage = null;
+      searching = false;
+    });
   }
 
   Future<void> addShare() async {
@@ -394,6 +454,47 @@ class _SharingScreenState extends State<SharingScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget buildSearchSuggestions() {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 300),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFDCE6FF)),
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        itemCount: searchResults.length,
+        separatorBuilder: (_, _) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final user = searchResults[index];
+          final name = userName(user);
+          final email = userEmail(user);
+
+          return ListTile(
+            leading: const CircleAvatar(
+              backgroundColor: Color(0xFFEAF0FF),
+              child: Icon(Icons.person_outline, color: AppColors.primary),
+            ),
+            title: Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            subtitle: Text(email, maxLines: 1, overflow: TextOverflow.ellipsis),
+            trailing: const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.primary,
+            ),
+            onTap: () => selectSearchUser(user),
+          );
+        },
       ),
     );
   }
@@ -651,7 +752,7 @@ class _SharingScreenState extends State<SharingScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const Text(
-                              'Nhập email đã đăng ký trên TaskManager.',
+                              'Nhập từ 2 ký tự tên hoặc email để xem danh sách gợi ý.',
                               style: TextStyle(
                                 color: AppColors.muted,
                                 fontSize: 13,
@@ -662,16 +763,11 @@ class _SharingScreenState extends State<SharingScreen> {
                               controller: emailController,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.search,
-                              onChanged: (_) {
-                                setState(() {
-                                  foundUser = null;
-                                  searchMessage = null;
-                                });
-                              },
+                              onChanged: _onSearchChanged,
                               onSubmitted: (_) => searchUser(),
                               decoration: const InputDecoration(
-                                labelText: 'Email người nhận',
-                                hintText: 'example@gmail.com',
+                                labelText: 'Tên hoặc email người nhận',
+                                hintText: 'Nhập tên hoặc email...',
                                 prefixIcon: Icon(Icons.alternate_email_rounded),
                               ),
                             ),
@@ -702,6 +798,11 @@ class _SharingScreenState extends State<SharingScreen> {
                                 searchMessage!,
                                 style: const TextStyle(color: AppColors.muted),
                               ),
+                            ],
+                            if (searchResults.isNotEmpty &&
+                                foundUser == null) ...[
+                              const SizedBox(height: 12),
+                              buildSearchSuggestions(),
                             ],
                             if (foundUser != null) ...[
                               const SizedBox(height: 15),
