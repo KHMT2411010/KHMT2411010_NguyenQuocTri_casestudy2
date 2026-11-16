@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../services/task_service.dart';
 import '../../services/user_service.dart';
 import '../../utils/constants.dart';
-import '../../utils/validators.dart';
 
 class AssignmentScreen extends StatefulWidget {
   final String taskId;
@@ -24,6 +25,9 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
   final Set<String> initialAssignedIds = {};
 
   Map<String, dynamic>? foundUser;
+  final List<Map<String, dynamic>> searchResults = [];
+  Timer? _searchTimer;
+  int _searchGeneration = 0;
   String? primaryId;
   String? searchMessage;
 
@@ -85,6 +89,8 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
 
   @override
   void dispose() {
+    _searchTimer?.cancel();
+    _searchGeneration++;
     emailController.dispose();
     super.dispose();
   }
@@ -112,45 +118,140 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
     return user['email']?.toString() ?? '';
   }
 
+  void _onSearchChanged(String value) {
+    _searchTimer?.cancel();
+    _searchGeneration++;
+
+    final keyword = value.trim();
+
+    setState(() {
+      foundUser = null;
+      searchResults.clear();
+      searchMessage = null;
+      searching = false;
+    });
+
+    if (keyword.length < 2 || saving) return;
+
+    _searchTimer = Timer(const Duration(milliseconds: 350), () {
+      searchUser();
+    });
+  }
+
   Future<void> searchUser() async {
-    if (searching || saving) return;
+    if (saving) return;
 
-    final email = emailController.text.trim();
+    _searchTimer?.cancel();
+    final keyword = emailController.text.trim();
+    final generation = ++_searchGeneration;
 
-    final validationError = AppValidators.email(email);
-
-    if (validationError != null) {
-      showMessage(validationError, error: true);
+    if (keyword.length < 2) {
+      setState(() {
+        searching = false;
+        searchResults.clear();
+        foundUser = null;
+        searchMessage = 'Vui lòng nhập ít nhất 2 ký tự.';
+      });
       return;
     }
 
     setState(() {
       searching = true;
       foundUser = null;
+      searchResults.clear();
       searchMessage = null;
     });
 
     try {
-      final result = await _userService.findByEmail(email);
+      final users = await _userService.searchUsers(keyword);
 
-      if (!mounted) return;
+      if (!mounted || generation != _searchGeneration) return;
+
+      if (emailController.text.trim() != keyword) return;
 
       setState(() {
-        foundUser = result;
-        searchMessage = result == null
-            ? 'Không tìm thấy tài khoản có email này.'
+        searchResults.addAll(users);
+        searchMessage = users.isEmpty
+            ? 'Không tìm thấy tài khoản phù hợp.'
             : null;
       });
     } catch (error) {
-      showMessage(
-        error.toString().replaceFirst('Exception: ', ''),
-        error: true,
-      );
+      if (!mounted || generation != _searchGeneration) return;
+
+      setState(() {
+        searchResults.clear();
+        searchMessage = error.toString().replaceFirst('Exception: ', '');
+      });
     } finally {
-      if (mounted) {
+      if (mounted && generation == _searchGeneration) {
         setState(() => searching = false);
       }
     }
+  }
+
+  void selectSearchUser(Map<String, dynamic> user) {
+    if (saving) return;
+
+    final id = userId(user);
+    final email = userEmail(user);
+
+    if (id.isEmpty || email.isEmpty) {
+      showMessage('Tài khoản không hợp lệ', error: true);
+      return;
+    }
+
+    _searchTimer?.cancel();
+    _searchGeneration++;
+
+    emailController.text = email;
+
+    setState(() {
+      foundUser = user;
+      searchResults.clear();
+      searchMessage = null;
+      searching = false;
+    });
+  }
+
+  Widget buildSearchSuggestions() {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 300),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFDCE6FF)),
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        itemCount: searchResults.length,
+        separatorBuilder: (_, _) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final user = searchResults[index];
+          final name = userName(user);
+          final email = userEmail(user);
+
+          return ListTile(
+            leading: const CircleAvatar(
+              backgroundColor: Color(0xFFEAF0FF),
+              child: Icon(Icons.person_outline, color: AppColors.primary),
+            ),
+            title: Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            subtitle: Text(email, maxLines: 1, overflow: TextOverflow.ellipsis),
+            trailing: const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.primary,
+            ),
+            onTap: () => selectSearchUser(user),
+          );
+        },
+      ),
+    );
   }
 
   void addUser() {
@@ -177,7 +278,10 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       primaryId ??= id;
 
       foundUser = null;
+      searchResults.clear();
       searchMessage = null;
+      _searchTimer?.cancel();
+      _searchGeneration++;
       emailController.clear();
     });
 
@@ -533,7 +637,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const Text(
-                              'Nhập email của tài khoản đã đăng ký.',
+                              'Nhập từ 2 ký tự tên hoặc email để xem danh sách gợi ý.',
                               style: TextStyle(
                                 color: AppColors.muted,
                                 fontSize: 13,
@@ -544,16 +648,11 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                               controller: emailController,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.search,
-                              onChanged: (_) {
-                                setState(() {
-                                  foundUser = null;
-                                  searchMessage = null;
-                                });
-                              },
+                              onChanged: _onSearchChanged,
                               onSubmitted: (_) => searchUser(),
                               decoration: const InputDecoration(
-                                labelText: 'Email thành viên',
-                                hintText: 'example@gmail.com',
+                                labelText: 'Tên hoặc email thành viên',
+                                hintText: 'Nhập tên hoặc email...',
                                 prefixIcon: Icon(Icons.alternate_email_rounded),
                               ),
                             ),
@@ -584,6 +683,11 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                                 searchMessage!,
                                 style: const TextStyle(color: AppColors.muted),
                               ),
+                            ],
+                            if (searchResults.isNotEmpty &&
+                                foundUser == null) ...[
+                              const SizedBox(height: 12),
+                              buildSearchSuggestions(),
                             ],
                             if (foundUser != null) ...[
                               const SizedBox(height: 15),
